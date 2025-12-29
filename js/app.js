@@ -8,6 +8,42 @@ window.selectUser = function(name) {
   location.reload()
 }
 
+// Helper function to make requests without CORS issues
+async function makeRequest(url) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const callbackName = 'callback_' + Date.now();
+    
+    window[callbackName] = function(data) {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    
+    script.onerror = function() {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error('Script load failed'));
+    };
+    
+    // Add callback parameter
+    const separator = url.includes('?') ? '&' : '?';
+    script.src = url + separator + 'callback=' + callbackName;
+    document.body.appendChild(script);
+    
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      if (window[callbackName]) {
+        delete window[callbackName];
+        if (script.parentNode) {
+          document.body.removeChild(script);
+        }
+        reject(new Error('Request timeout'));
+      }
+    }, 30000);
+  });
+}
+
 window.syncNow = async function() {
   const button = event.target;
   const originalText = button.textContent;
@@ -41,18 +77,13 @@ window.syncNow = async function() {
       localData: localData
     };
 
-    // Use GET request with URL parameters to avoid CORS
+    // Build URL with parameters
     const url = `${APPS_SCRIPT_URL}?action=sync&data=${encodeURIComponent(JSON.stringify(syncData))}`;
     
-    const response = await fetch(url, {
-      method: 'GET'
-    });
-
-    if (!response.ok) {
-      throw new Error('Network error: ' + response.status);
-    }
-
-    const result = await response.json();
+    console.log('Syncing with URL (data omitted for brevity)');
+    
+    // Use JSONP to avoid CORS
+    const result = await makeRequest(url);
     console.log('Sync result:', result);
     
     if (!result.success) {
@@ -61,11 +92,17 @@ window.syncNow = async function() {
 
     // Save remote data to local
     if (result.data) {
-      await saveRemoteData(result.data, user);
+      const syncCount = await saveRemoteData(result.data, user);
+      if (syncCount > 0) {
+        button.textContent = `✓ Synced ${syncCount} items!`;
+      } else {
+        button.textContent = '✓ Up to date!';
+      }
+    } else {
+      button.textContent = '✓ Synced!';
     }
-
-    button.textContent = '✓ Synced!';
-    setTimeout(() => location.reload(), 1000);
+    
+    setTimeout(() => location.reload(), 1500);
 
   } catch (error) {
     console.error('Sync error:', error);
@@ -81,6 +118,7 @@ async function saveRemoteData(remoteData, currentUser) {
   const db = await openDB();
   const stores = ['journals', 'schedules', 'finance'];
   const partnerUser = currentUser === 'fikri' ? 'khansa' : 'fikri';
+  let totalSynced = 0;
   
   for (const store of stores) {
     try {
@@ -122,11 +160,15 @@ async function saveRemoteData(remoteData, currentUser) {
           writeTx.oncomplete = () => resolve();
           writeTx.onerror = () => reject(writeTx.error);
         });
+        
+        totalSynced += newItems.length;
       }
     } catch (e) {
       console.error(`Error syncing ${store}:`, e);
     }
   }
+  
+  return totalSynced;
 }
 
 window.onload = async () => {
