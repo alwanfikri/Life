@@ -1,4 +1,4 @@
-// ========= IMPORTS (must be first) =========
+// ========= IMPORTS =========
 import { setUser, getUser } from './users.js'
 import { openDB } from './db.js'
 import { renderDaily } from './daily.js'
@@ -11,7 +11,7 @@ const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbwwP1vcelnBwsiG1Zy67wvK0xSsQCWEgaIvuRBgGTHvNFOGOS6JEzYcF3SU0tUz7ulf/exec'
 
 
-// ========= USER HANDLING (legacy safe) =========
+// ========= OPTIONAL: legacy hook =========
 window.selectUser = function(name) {
   setUser(name)
   location.reload()
@@ -170,10 +170,10 @@ async function saveRemoteData(remoteData, currentUser) {
 }
 
 
-// ========= INITIALIZE DB =========
+// ========= INITIALIZE DB ONLY =========
 window.onload = async () => {
   await openDB()
-  // UI handled in index.html
+  // UI is controlled in index.html
 }
 
 

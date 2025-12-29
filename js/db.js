@@ -7,10 +7,13 @@ export function openDB(){
 
     req.onupgradeneeded=e=>{
       const db=e.target.result;
+
       if(!db.objectStoreNames.contains('journals'))
         db.createObjectStore('journals',{keyPath:'id'});
+
       if(!db.objectStoreNames.contains('schedules'))
         db.createObjectStore('schedules',{keyPath:'id'});
+
       if(!db.objectStoreNames.contains('finance'))
         db.createObjectStore('finance',{keyPath:'id'});
     };
