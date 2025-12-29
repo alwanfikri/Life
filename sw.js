@@ -5,7 +5,14 @@ self.addEventListener('install', e => {
         '/',
         '/index.html',
         '/css/base.css',
-        '/js/app.js'
+        '/css/layout.css',
+        '/js/app.js',
+        '/js/db.js',
+        '/js/users.js',
+        '/js/sync.js',
+        '/js/journal.js',
+        '/js/schedule.js',
+        '/js/finance.js'
       ])
     )
   )
