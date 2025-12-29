@@ -1,6 +1,6 @@
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open('beta-cache').then(cache =>
+    caches.open('life-v2').then(cache =>
       cache.addAll([
         '/',
         '/index.html',
@@ -9,10 +9,11 @@ self.addEventListener('install', e => {
         '/js/app.js',
         '/js/db.js',
         '/js/users.js',
-        '/js/sync.js',
         '/js/journal.js',
         '/js/schedule.js',
-        '/js/finance.js'
+        '/js/finance.js',
+        '/manifest.json',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
       ])
     )
   )
@@ -23,3 +24,17 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(r => r || fetch(e.request))
   )
 })
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== 'life-v2') {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});

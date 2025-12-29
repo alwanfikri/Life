@@ -2,209 +2,595 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Shared Life Beta</title>
+  <title>Shared Life</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <style>
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #e0e0e0;
+    /* Landing Page Styles */
+    .landing-container {
+      max-width: 400px;
+      margin: 60px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
     }
-    .tab {
-      padding: 12px 24px;
+    
+    .landing-container h1 {
+      margin-bottom: 10px;
+      color: #2196F3;
+    }
+    
+    .landing-container p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    
+    .user-input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+      transition: border-color 0.3s;
+    }
+    
+    .user-input:focus {
+      border-color: #2196F3;
+      outline: none;
+    }
+    
+    .btn-start {
+      background: #2196F3;
+      color: white;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      transition: background 0.3s;
+    }
+    
+    .btn-start:hover {
+      background: #1976D2;
+    }
+    
+    /* App Styles */
+    #app {
+      display: none;
+    }
+    
+    .app-header {
+      background: #2196F3;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(33, 150, 243, 0.2);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .nav-tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+      overflow-x: auto;
+      padding: 0 4px;
+    }
+    
+    .nav-tab {
+      flex: 1;
+      min-width: 80px;
+      padding: 16px 8px;
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
       border-bottom: 3px solid transparent;
       transition: all 0.3s;
+      white-space: nowrap;
     }
-    .tab:hover {
-      background: #f5f5f5;
-    }
-    .tab.active {
-      border-bottom-color: #2196F3;
+    
+    .nav-tab:hover {
       color: #2196F3;
+      background: #f0f7ff;
+    }
+    
+    .nav-tab.active {
+      color: #2196F3;
+      border-bottom-color: #2196F3;
       font-weight: 600;
     }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
+    
+    .nav-tab i {
       display: block;
+      margin-bottom: 4px;
+      font-size: 20px;
     }
+    
+    .tab-content {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    /* Form Styles */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
+    
     .form-group label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: 500;
+      color: #333;
     }
-    .form-group input,
-    .form-group textarea {
+    
+    .form-control {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #ddd;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       font-family: inherit;
+      transition: border-color 0.3s;
     }
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
+    
+    .form-control:focus {
+      border-color: #2196F3;
+      outline: none;
     }
+    
     .checkbox-group {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
-    .checkbox-group input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-    }
+    
     .btn-primary {
       background: #2196F3;
       color: white;
-      padding: 12px 24px;
+      padding: 14px 28px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 16px;
+      font-weight: 500;
       width: 100%;
+      transition: background 0.3s;
     }
+    
     .btn-primary:hover {
       background: #1976D2;
     }
+    
+    /* Items List */
     .items-list {
-      margin-top: 24px;
+      margin-top: 30px;
     }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    
     .item-card {
-      background: #f9f9f9;
-      padding: 16px;
-      margin-bottom: 12px;
+      background: white;
+      padding: 20px;
+      margin-bottom: 16px;
       border-radius: 8px;
       border-left: 4px solid #2196F3;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
+    
     .item-card.shared {
-      background: #e8f5e9;
       border-left-color: #4CAF50;
+      background: #f8fff8;
     }
+    
     .item-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
+      align-items: center;
+      margin-bottom: 12px;
     }
-    .item-badge {
+    
+    .item-owner {
       display: inline-block;
-      padding: 4px 8px;
-      background: #2196F3;
-      color: white;
-      border-radius: 4px;
+      padding: 4px 12px;
+      background: #e3f2fd;
+      color: #1976D2;
+      border-radius: 20px;
       font-size: 12px;
+      font-weight: 500;
     }
-    .item-badge.shared {
-      background: #4CAF50;
+    
+    .item-owner.shared {
+      background: #e8f5e9;
+      color: #388E3C;
     }
-    .item-meta {
-      color: #666;
+    
+    .item-date {
+      color: #888;
       font-size: 13px;
     }
+    
     .amount {
-      font-size: 24px;
-      font-weight: bold;
-      margin: 8px 0;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 12px 0;
     }
+    
     .amount.income {
       color: #4CAF50;
     }
+    
     .amount.expense {
       color: #f44336;
     }
+    
+    /* Settings Tab */
+    .settings-section {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .settings-section h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .btn-logout {
+      background: #f44336;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    .btn-logout:hover {
+      background: #d32f2f;
+    }
+    
+    .btn-sync {
+      background: #4CAF50;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+      margin-left: 10px;
+    }
+    
+    .btn-sync:hover {
+      background: #388E3C;
+    }
+    
+    /* Icon Font */
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
   </style>
 </head>
 <body>
 
-<div id="user-select">
-  <h2>Who are you?</h2>
-  <button onclick="selectUser('fikri')">Fikri</button>
-  <button onclick="selectUser('khansa')">Khansa</button>
+<!-- Landing Page -->
+<div id="landing">
+  <div class="landing-container">
+    <h1>Shared Life</h1>
+    <p>Connect, share, and organize your life together</p>
+    
+    <div class="form-group">
+      <input 
+        type="text" 
+        id="username" 
+        class="user-input" 
+        placeholder="Enter your name"
+        maxlength="20"
+      >
+    </div>
+    
+    <button class="btn-start" onclick="startApp()">
+      <i class="fas fa-rocket" style="margin-right: 8px;"></i>
+      Start Sharing
+    </button>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+      <p style="font-size: 14px; color: #888; margin-bottom: 15px;">
+        Already using Shared Life?
+      </p>
+      <div id="existing-users" style="display: flex; gap: 10px; justify-content: center;">
+        <!-- Existing users will be loaded here -->
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="app" hidden>
-  <header>
-    <span id="activeUser"></span>
-    <button onclick="syncNow()">Sync</button>
+<!-- Main App -->
+<div id="app">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="user-info">
+      <div class="user-avatar" id="user-avatar">U</div>
+      <div>
+        <div style="font-weight: 600;" id="current-user">User</div>
+        <div style="font-size: 12px; opacity: 0.9;">Shared Life</div>
+      </div>
+    </div>
+    <div>
+      <button class="btn-sync" onclick="syncNow()">
+        <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>
+        Sync
+      </button>
+    </div>
   </header>
-
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('journal')">Journal</button>
-    <button class="tab" onclick="switchTab('schedule')">Schedule</button>
-    <button class="tab" onclick="switchTab('finance')">Finance</button>
-  </div>
-
-  <!-- Journal Tab -->
-  <div id="journal-tab" class="tab-content active">
-    <div class="form-group">
-      <label>Write your thoughts</label>
-      <textarea id="journal-text" placeholder="What's on your mind?"></textarea>
+  
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('dashboard')">
+      <i class="fas fa-home"></i>
+      Dashboard
+    </button>
+    <button class="nav-tab" onclick="switchTab('journal')">
+      <i class="fas fa-book"></i>
+      Journal
+    </button>
+    <button class="nav-tab" onclick="switchTab('schedule')">
+      <i class="fas fa-calendar"></i>
+      Schedule
+    </button>
+    <button class="nav-tab" onclick="switchTab('finance')">
+      <i class="fas fa-wallet"></i>
+      Finance
+    </button>
+    <button class="nav-tab" onclick="switchTab('settings')">
+      <i class="fas fa-cog"></i>
+      Settings
+    </button>
+  </nav>
+  
+  <!-- Tab Contents -->
+  <main>
+    <!-- Dashboard Tab -->
+    <div id="dashboard-tab" class="tab-content active">
+      <h2 style="margin-top: 0;">Welcome back, <span id="dashboard-user"></span>!</h2>
+      <div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px;">
+          <div style="font-size: 12px; opacity: 0.9;">Journal Entries</div>
+          <div style="font-size: 32px; font-weight: bold;" id="stat-journal">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px;">
+          <div style="font-size: 12px; opacity: 0.9;">Upcoming Events</div>
+          <div style="font-size: 32px; font-weight: bold;" id="stat-schedule">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 8px;">
+          <div style="font-size: 12px; opacity: 0.9;">Total Balance</div>
+          <div style="font-size: 32px; font-weight: bold;" id="stat-balance">$0</div>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="settings-section">
+          <h3><i class="fas fa-clock" style="margin-right: 8px;"></i> Recent Activity</h3>
+          <div id="recent-activity">
+            <!-- Activity will be loaded here -->
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3><i class="fas fa-users" style="margin-right: 8px;"></i> Quick Actions</h3>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-primary" onclick="switchTab('journal')">
+              <i class="fas fa-plus" style="margin-right: 8px;"></i>
+              New Journal Entry
+            </button>
+            <button class="btn-primary" onclick="switchTab('schedule')" style="background: #9C27B0;">
+              <i class="fas fa-plus" style="margin-right: 8px;"></i>
+              Add Event
+            </button>
+            <button class="btn-primary" onclick="switchTab('finance')" style="background: #FF9800;">
+              <i class="fas fa-plus" style="margin-right: 8px;"></i>
+              Add Transaction
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="checkbox-group">
-      <input type="checkbox" id="journal-shared">
-      <label for="journal-shared">Share with partner</label>
+    
+    <!-- Journal Tab -->
+    <div id="journal-tab" class="tab-content">
+      <h2 style="margin-top: 0;">Journal</h2>
+      <p style="color: #666; margin-bottom: 20px;">Record your thoughts and share them with your partner.</p>
+      
+      <div class="form-group">
+        <label>What's on your mind?</label>
+        <textarea id="journal-text" class="form-control" placeholder="Write your thoughts here..." rows="4"></textarea>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="journal-shared">
+        <label for="journal-shared">Share this entry with your partner</label>
+      </div>
+      
+      <button class="btn-primary" onclick="addJournalEntry()">
+        <i class="fas fa-plus" style="margin-right: 8px;"></i>
+        Add Entry
+      </button>
+      
+      <div id="journal-list" class="items-list"></div>
     </div>
-    <button class="btn-primary" onclick="addJournalEntry()">Add Entry</button>
-    <div id="journal-list" class="items-list"></div>
-  </div>
-
-  <!-- Schedule Tab -->
-  <div id="schedule-tab" class="tab-content">
-    <div class="form-group">
-      <label>Event Title</label>
-      <input type="text" id="schedule-title" placeholder="e.g., Date night">
+    
+    <!-- Schedule Tab -->
+    <div id="schedule-tab" class="tab-content">
+      <h2 style="margin-top: 0;">Schedule</h2>
+      <p style="color: #666; margin-bottom: 20px;">Plan and organize your events.</p>
+      
+      <div class="form-group">
+        <label>Event Title</label>
+        <input type="text" id="schedule-title" class="form-control" placeholder="e.g., Date night, Meeting">
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="datetime-local" id="schedule-start" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="datetime-local" id="schedule-end" class="form-control">
+        </div>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="schedule-shared">
+        <label for="schedule-shared">Share this event with your partner</label>
+      </div>
+      
+      <button class="btn-primary" onclick="addScheduleEntry()">
+        <i class="fas fa-plus" style="margin-right: 8px;"></i>
+        Add Event
+      </button>
+      
+      <div id="schedule-list" class="items-list"></div>
     </div>
-    <div class="form-group">
-      <label>Start Time</label>
-      <input type="datetime-local" id="schedule-start">
+    
+    <!-- Finance Tab -->
+    <div id="finance-tab" class="tab-content">
+      <h2 style="margin-top: 0;">Finance</h2>
+      <p style="color: #666; margin-bottom: 20px;">Track your income and expenses.</p>
+      
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" id="finance-amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+      </div>
+      
+      <div class="form-group">
+        <label>Type</label>
+        <select id="finance-type" class="form-control">
+          <option value="in">Income</option>
+          <option value="out">Expense</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Description (Optional)</label>
+        <input type="text" id="finance-description" class="form-control" placeholder="What was this for?">
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="finance-shared">
+        <label for="finance-shared">Share this transaction with your partner</label>
+      </div>
+      
+      <button class="btn-primary" onclick="addFinanceEntry()">
+        <i class="fas fa-plus" style="margin-right: 8px;"></i>
+        Add Transaction
+      </button>
+      
+      <div id="finance-list" class="items-list"></div>
     </div>
-    <div class="form-group">
-      <label>End Time</label>
-      <input type="datetime-local" id="schedule-end">
+    
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <h2 style="margin-top: 0;">Settings</h2>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-user" style="margin-right: 8px;"></i> User Profile</h3>
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div class="user-avatar" style="width: 60px; height: 60px; font-size: 24px;" id="settings-avatar">U</div>
+            <div>
+              <div style="font-size: 18px; font-weight: 600;" id="settings-username">User</div>
+              <div style="color: #666;">Member since <span id="member-since">Today</span></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Change Display Name</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="new-username" class="form-control" placeholder="New name">
+              <button class="btn-primary" onclick="updateUsername()" style="width: auto;">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Sync Settings</h3>
+        <p style="color: #666; margin-bottom: 15px;">
+          Last sync: <span id="last-sync">Never</span>
+        </p>
+        <button class="btn-primary" onclick="syncNow()">
+          <i class="fas fa-sync-alt" style="margin-right: 8px;"></i>
+          Sync Now
+        </button>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-cogs" style="margin-right: 8px;"></i> App Settings</h3>
+        <div class="checkbox-group">
+          <input type="checkbox" id="auto-sync">
+          <label for="auto-sync">Enable auto-sync (every 5 minutes)</label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="notifications">
+          <label for="notifications">Enable notifications</label>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Account</h3>
+        <p style="color: #666; margin-bottom: 15px;">
+          Log out to switch to another user or clear local data.
+        </p>
+        <button class="btn-logout" onclick="logout()">
+          <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>
+          Log Out
+        </button>
+      </div>
     </div>
-    <div class="checkbox-group">
-      <input type="checkbox" id="schedule-shared">
-      <label for="schedule-shared">Share with partner</label>
-    </div>
-    <button class="btn-primary" onclick="addScheduleEntry()">Add Event</button>
-    <div id="schedule-list" class="items-list"></div>
-  </div>
-
-  <!-- Finance Tab -->
-  <div id="finance-tab" class="tab-content">
-    <div class="form-group">
-      <label>Amount</label>
-      <input type="number" id="finance-amount" placeholder="0.00" step="0.01">
-    </div>
-    <div class="form-group">
-      <label>Type</label>
-      <select id="finance-type" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <option value="in">Income</option>
-        <option value="out">Expense</option>
-      </select>
-    </div>
-    <div class="checkbox-group">
-      <input type="checkbox" id="finance-shared">
-      <label for="finance-shared">Share with partner</label>
-    </div>
-    <button class="btn-primary" onclick="addFinanceEntry()">Add Transaction</button>
-    <div id="finance-list" class="items-list"></div>
-  </div>
+  </main>
 </div>
 
 <script type="module" src="js/app.js"></script>
@@ -213,11 +599,119 @@
   import { addSchedule } from './js/schedule.js';
   import { addFinance } from './js/finance.js';
   import { openDB } from './js/db.js';
+  import { setUser, getUser, getAllUsers } from './js/users.js';
 
-  // Make functions global
+  // Initialize the app
+  window.addEventListener('DOMContentLoaded', async () => {
+    await openDB();
+    const user = getUser();
+    
+    if (user) {
+      showApp(user);
+    } else {
+      showLanding();
+    }
+  });
+
+  // Show landing page
+  function showLanding() {
+    document.getElementById('landing').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+    loadExistingUsers();
+  }
+
+  // Show main app
+  function showApp(user) {
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    
+    // Update user display
+    updateUserDisplay(user);
+    
+    // Load dashboard
+    switchTab('dashboard');
+  }
+
+  // Load existing users
+  async function loadExistingUsers() {
+    const users = await getAllUsers();
+    const container = document.getElementById('existing-users');
+    
+    if (users.length === 0) {
+      container.innerHTML = '<p style="color: #999; font-size: 14px;">No previous users found</p>';
+      return;
+    }
+    
+    container.innerHTML = users.map(user => `
+      <button onclick="selectExistingUser('${user}')" 
+              style="padding: 8px 16px; background: #f0f7ff; border: 1px solid #2196F3; 
+                     border-radius: 20px; color: #2196F3; cursor: pointer; font-size: 14px;">
+        <i class="fas fa-user" style="margin-right: 5px;"></i>
+        ${user}
+      </button>
+    `).join('');
+  }
+
+  // Select existing user
+  window.selectExistingUser = function(username) {
+    document.getElementById('username').value = username;
+  };
+
+  // Start app with new user
+  window.startApp = async function() {
+    const username = document.getElementById('username').value.trim();
+    
+    if (!username) {
+      alert('Please enter your name');
+      return;
+    }
+    
+    if (username.length < 2) {
+      alert('Name should be at least 2 characters');
+      return;
+    }
+    
+    setUser(username);
+    showApp(username);
+  };
+
+  // Update user display
+  function updateUserDisplay(user) {
+    const avatar = user.charAt(0).toUpperCase();
+    
+    // Update all user displays
+    document.getElementById('current-user').textContent = user;
+    document.getElementById('dashboard-user').textContent = user;
+    document.getElementById('settings-username').textContent = user;
+    document.getElementById('user-avatar').textContent = avatar;
+    document.getElementById('settings-avatar').textContent = avatar;
+    
+    // Update member since
+    const since = localStorage.getItem(`${user}_joined`) || new Date().toLocaleDateString();
+    document.getElementById('member-since').textContent = since;
+  }
+
+  // Update username
+  window.updateUsername = function() {
+    const newName = document.getElementById('new-username').value.trim();
+    if (!newName || newName.length < 2) {
+      alert('Please enter a valid name (at least 2 characters)');
+      return;
+    }
+    
+    const oldUser = getUser();
+    localStorage.setItem(`${newName}_joined`, localStorage.getItem(`${oldUser}_joined`) || new Date().toLocaleDateString());
+    
+    setUser(newName);
+    updateUserDisplay(newName);
+    document.getElementById('new-username').value = '';
+    alert('Username updated!');
+  };
+
+  // Tab switching
   window.switchTab = function(tabName) {
     // Update tab buttons
-    document.querySelectorAll('.tab').forEach(tab => {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.classList.remove('active');
     });
     event.target.classList.add('active');
@@ -232,6 +726,212 @@
     loadTabData(tabName);
   };
 
+  // Load tab data
+  async function loadTabData(tabName) {
+    const db = await openDB();
+    const storeName = tabName === 'journal' ? 'journals' : 
+                     tabName === 'schedule' ? 'schedules' : 
+                     tabName === 'finance' ? 'finance' : null;
+    
+    if (tabName === 'dashboard') {
+      await loadDashboard();
+      return;
+    }
+    
+    if (!storeName) return;
+    
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const items = await new Promise((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+
+    const listId = tabName + '-list';
+    const listEl = document.getElementById(listId);
+
+    if (items.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-${tabName === 'journal' ? 'book' : tabName === 'schedule' ? 'calendar' : 'wallet'}"></i>
+          <h3>No ${tabName} entries yet</h3>
+          <p>Add your first ${tabName} entry to get started</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (tabName === 'journal') {
+      listEl.innerHTML = items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
+        <div class="item-card ${item.shared ? 'shared' : ''}">
+          <div class="item-header">
+            <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+            <span class="item-date">${new Date(item.createdAt).toLocaleString()}</span>
+          </div>
+          <p style="margin: 12px 0 0 0; line-height: 1.5;">${item.text}</p>
+        </div>
+      `).join('');
+    } else if (tabName === 'schedule') {
+      const now = Date.now();
+      const upcoming = items.filter(item => new Date(item.end).getTime() > now);
+      const past = items.filter(item => new Date(item.end).getTime() <= now);
+      
+      listEl.innerHTML = '';
+      
+      if (upcoming.length > 0) {
+        listEl.innerHTML += `
+          <h3 style="margin: 20px 0 10px 0; color: #333;">Upcoming (${upcoming.length})</h3>
+          ${upcoming.sort((a, b) => new Date(a.start) - new Date(b.start)).map(item => `
+            <div class="item-card ${item.shared ? 'shared' : ''}">
+              <div class="item-header">
+                <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+              </div>
+              <h4 style="margin: 8px 0;">${item.title}</h4>
+              <p class="item-date">
+                <i class="far fa-clock" style="margin-right: 5px;"></i>
+                ${new Date(item.start).toLocaleString()} - ${new Date(item.end).toLocaleString()}
+              </p>
+            </div>
+          `).join('')}
+        `;
+      }
+      
+      if (past.length > 0) {
+        listEl.innerHTML += `
+          <h3 style="margin: 20px 0 10px 0; color: #333;">Past Events (${past.length})</h3>
+          ${past.sort((a, b) => new Date(b.start) - new Date(a.start)).map(item => `
+            <div class="item-card ${item.shared ? 'shared' : ''}" style="opacity: 0.7;">
+              <div class="item-header">
+                <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+              </div>
+              <h4 style="margin: 8px 0;">${item.title}</h4>
+              <p class="item-date">${new Date(item.start).toLocaleString()}</p>
+            </div>
+          `).join('')}
+        `;
+      }
+    } else if (tabName === 'finance') {
+      const total = items.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
+      listEl.innerHTML = `
+        <div class="item-card" style="border-left-color: #9C27B0; background: #f3e5f5;">
+          <h4 style="margin: 0 0 8px 0;">Current Balance</h4>
+          <div class="amount ${total >= 0 ? 'income' : 'expense'}">
+            ${total >= 0 ? '+' : ''}$${total.toFixed(2)}
+          </div>
+          <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">
+            ${items.length} transactions total
+          </p>
+        </div>
+      ` + items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
+        <div class="item-card ${item.shared ? 'shared' : ''}">
+          <div class="item-header">
+            <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+            <span class="item-date">${new Date(item.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="amount ${item.type === 'in' ? 'income' : 'expense'}">
+            ${item.type === 'in' ? '+' : '-'}$${item.amount.toFixed(2)}
+          </div>
+          ${item.description ? `<p style="color: #666; margin: 8px 0 0 0;">${item.description}</p>` : ''}
+        </div>
+      `).join('');
+    }
+  }
+
+  // Load dashboard
+  async function loadDashboard() {
+    const db = await openDB();
+    
+    // Get counts
+    const journals = await getStoreCount(db, 'journals');
+    const schedules = await getStoreCount(db, 'schedules');
+    const finance = await getStoreCount(db, 'finance');
+    
+    // Update stats
+    document.getElementById('stat-journal').textContent = journals;
+    document.getElementById('stat-schedule').textContent = schedules;
+    
+    // Calculate balance
+    const financeItems = await getAllFromStore(db, 'finance');
+    const balance = financeItems.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
+    document.getElementById('stat-balance').textContent = `$${balance.toFixed(2)}`;
+    
+    // Load recent activity
+    await loadRecentActivity(db);
+  }
+
+  // Helper functions
+  async function getStoreCount(db, storeName) {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    return await new Promise((resolve, reject) => {
+      const request = store.count();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function getAllFromStore(db, storeName) {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    return await new Promise((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function loadRecentActivity(db) {
+    const activities = [];
+    
+    // Get recent items from all stores
+    const stores = ['journals', 'schedules', 'finance'];
+    for (const store of stores) {
+      const items = await getAllFromStore(db, store);
+      items.forEach(item => {
+        activities.push({
+          type: store,
+          item: item,
+          date: item.createdAt
+        });
+      });
+    }
+    
+    // Sort by date
+    activities.sort((a, b) => b.date - a.date);
+    
+    // Display
+    const container = document.getElementById('recent-activity');
+    if (activities.length === 0) {
+      container.innerHTML = '<p style="color: #999; text-align: center;">No recent activity</p>';
+      return;
+    }
+    
+    container.innerHTML = activities.slice(0, 5).map(activity => {
+      const icon = activity.type === 'journals' ? 'book' : 
+                  activity.type === 'schedules' ? 'calendar' : 'wallet';
+      const text = activity.type === 'journals' ? `Journal entry: ${activity.item.text.substring(0, 30)}...` :
+                  activity.type === 'schedules' ? `Event: ${activity.item.title}` :
+                  `Transaction: $${activity.item.amount}`;
+      
+      return `
+        <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee;">
+          <div style="background: #f0f7ff; border-radius: 50%; width: 32px; height: 32px; 
+                      display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-${icon}" style="color: #2196F3;"></i>
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 14px; color: #333;">${text}</div>
+            <div style="font-size: 12px; color: #888;">
+              ${new Date(activity.date).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Entry functions
   window.addJournalEntry = async function() {
     const text = document.getElementById('journal-text').value.trim();
     const shared = document.getElementById('journal-shared').checked;
@@ -269,6 +969,7 @@
   window.addFinanceEntry = async function() {
     const amount = parseFloat(document.getElementById('finance-amount').value);
     const type = document.getElementById('finance-type').value;
+    const description = document.getElementById('finance-description').value.trim();
     const shared = document.getElementById('finance-shared').checked;
 
     if (!amount || amount <= 0) {
@@ -276,82 +977,54 @@
       return;
     }
 
-    await addFinance(amount, type, shared);
+    await addFinance(amount, type, description, shared);
     document.getElementById('finance-amount').value = '';
+    document.getElementById('finance-description').value = '';
     document.getElementById('finance-shared').checked = false;
     loadTabData('finance');
   };
 
-  async function loadTabData(tabName) {
-    const db = await openDB();
-    const storeName = tabName === 'journal' ? 'journals' : tabName === 'schedule' ? 'schedules' : 'finance';
+  // Logout
+  window.logout = function() {
+    if (confirm('Are you sure you want to log out? You can log back in with the same name.')) {
+      localStorage.removeItem('activeUser');
+      showLanding();
+    }
+  };
+
+  // Sync function (simplified version)
+  window.syncNow = async function() {
+    const syncBtn = document.querySelector('.btn-sync');
+    const originalText = syncBtn.innerHTML;
     
-    const tx = db.transaction(storeName, 'readonly');
-    const store = tx.objectStore(storeName);
-    const items = await new Promise((resolve, reject) => {
-      const request = store.getAll();
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
+    syncBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Syncing...';
+    syncBtn.disabled = true;
+    
+    // Simulate sync
+    setTimeout(() => {
+      const lastSync = new Date().toLocaleString();
+      document.getElementById('last-sync').textContent = lastSync;
+      localStorage.setItem('lastSync', lastSync);
+      
+      syncBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 5px;"></i> Synced!';
+      
+      setTimeout(() => {
+        syncBtn.innerHTML = originalText;
+        syncBtn.disabled = false;
+        
+        // Reload dashboard
+        if (document.getElementById('dashboard-tab').classList.contains('active')) {
+          loadDashboard();
+        }
+      }, 1500);
+    }, 2000);
+  };
 
-    const listId = tabName + '-list';
-    const listEl = document.getElementById(listId);
-
-    if (items.length === 0) {
-      listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No items yet</p>';
-      return;
-    }
-
-    if (tabName === 'journal') {
-      listEl.innerHTML = items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
-        <div class="item-card ${item.shared ? 'shared' : ''}">
-          <div class="item-header">
-            <span class="item-badge ${item.shared ? 'shared' : ''}">${item.owner}</span>
-            <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
-          </div>
-          <p style="margin: 8px 0 0 0;">${item.text}</p>
-        </div>
-      `).join('');
-    } else if (tabName === 'schedule') {
-      listEl.innerHTML = items.sort((a, b) => new Date(a.start) - new Date(b.start)).map(item => `
-        <div class="item-card ${item.shared ? 'shared' : ''}">
-          <div class="item-header">
-            <span class="item-badge ${item.shared ? 'shared' : ''}">${item.owner}</span>
-          </div>
-          <h4 style="margin: 8px 0;">${item.title}</h4>
-          <p class="item-meta">
-            ${new Date(item.start).toLocaleString()} - ${new Date(item.end).toLocaleString()}
-          </p>
-        </div>
-      `).join('');
-    } else if (tabName === 'finance') {
-      const total = items.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
-      listEl.innerHTML = `
-        <div class="item-card" style="border-left-color: #9C27B0; background: #f3e5f5;">
-          <h4 style="margin: 0 0 8px 0;">Balance</h4>
-          <div class="amount ${total >= 0 ? 'income' : 'expense'}">
-            ${total >= 0 ? '+' : ''}$${total.toFixed(2)}
-          </div>
-        </div>
-      ` + items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
-        <div class="item-card ${item.shared ? 'shared' : ''}">
-          <div class="item-header">
-            <span class="item-badge ${item.shared ? 'shared' : ''}">${item.owner}</span>
-            <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
-          </div>
-          <div class="amount ${item.type === 'in' ? 'income' : 'expense'}">
-            ${item.type === 'in' ? '+' : '-'}$${item.amount.toFixed(2)}
-          </div>
-        </div>
-      `).join('');
-    }
-  }
-
-  // Load initial data when app loads
+  // Set last sync on load
   window.addEventListener('load', () => {
-    const user = localStorage.getItem('activeUser');
-    if (user) {
-      setTimeout(() => loadTabData('journal'), 500);
+    const lastSync = localStorage.getItem('lastSync');
+    if (lastSync) {
+      document.getElementById('last-sync').textContent = lastSync;
     }
   });
 </script>
