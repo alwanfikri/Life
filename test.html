@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Debug Shared Life</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    
+    .debug-box {
+      background: white;
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 3px;
+      overflow: auto;
+    }
+    
+    button {
+      padding: 10px 15px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Debug Shared Life App</h1>
+  
+  <div class="debug-box">
+    <h2>Step 1: Check localStorage</h2>
+    <button onclick="checkLocalStorage()">Check localStorage</button>
+    <div id="localstorage-result"></div>
+  </div>
+  
+  <div class="debug-box">
+    <h2>Step 2: Test IndexedDB</h2>
+    <button onclick="testIndexedDB()">Test IndexedDB</button>
+    <div id="indexeddb-result"></div>
+  </div>
+  
+  <div class="debug-box">
+    <h2>Step 3: Load Original App</h2>
+    <button onclick="loadOriginalApp()">Load Original App</button>
+  </div>
+  
+  <div class="debug-box">
+    <h2>Console Logs:</h2>
+    <pre id="console-output"></pre>
+  </div>
+  
+  <script>
+    // Redirect console.log to our debug window
+    const originalLog = console.log;
+    const originalError = console.error;
+    const consoleOutput = document.getElementById('console-output');
+    
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      consoleOutput.textContent += '[LOG] ' + args.join(' ') + '\n';
+    };
+    
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      consoleOutput.textContent += '[ERROR] ' + args.join(' ') + '\n';
+    };
+    
+    console.log('Debug page loaded');
+    
+    function checkLocalStorage() {
+      const resultDiv = document.getElementById('localstorage-result');
+      try {
+        const activeUser = localStorage.getItem('activeUser');
+        const allUsers = localStorage.getItem('allUsers');
+        
+        let html = '<h3>LocalStorage Contents:</h3>';
+        html += '<p><strong>activeUser:</strong> ' + (activeUser || 'Not set') + '</p>';
+        html += '<p><strong>allUsers:</strong> ' + (allUsers || 'Not set') + '</p>';
+        
+        // List all localStorage items
+        html += '<h4>All localStorage items:</h4>';
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          html += '<p><strong>' + key + ':</strong> ' + value.substring(0, 100) + '</p>';
+        }
+        
+        resultDiv.innerHTML = html;
+      } catch (e) {
+        resultDiv.innerHTML = '<p style="color: red;">Error: ' + e.message + '</p>';
+      }
+    }
+    
+    function testIndexedDB() {
+      const resultDiv = document.getElementById('indexeddb-result');
+      
+      try {
+        const request = indexedDB.open('life_beta', 1);
+        
+        request.onerror = function(event) {
+          resultDiv.innerHTML = '<p style="color: red;">IndexedDB Error: ' + event.target.error + '</p>';
+        };
+        
+        request.onsuccess = function(event) {
+          const db = event.target.result;
+          resultDiv.innerHTML = '<p style="color: green;">IndexedDB opened successfully!</p>';
+          resultDiv.innerHTML += '<p>Database name: ' + db.name + '</p>';
+          resultDiv.innerHTML += '<p>Version: ' + db.version + '</p>';
+          
+          // List object stores
+          if (db.objectStoreNames) {
+            let stores = [];
+            for (let i = 0; i < db.objectStoreNames.length; i++) {
+              stores.push(db.objectStoreNames[i]);
+            }
+            resultDiv.innerHTML += '<p>Object stores: ' + stores.join(', ') + '</p>';
+          }
+          
+          db.close();
+        };
+        
+        request.onupgradeneeded = function(event) {
+          const db = event.target.result;
+          resultDiv.innerHTML = '<p>IndexedDB needs upgrade to version ' + event.oldVersion + ' -> ' + event.newVersion + '</p>';
+        };
+      } catch (e) {
+        resultDiv.innerHTML = '<p style="color: red;">Exception: ' + e.message + '</p>';
+      }
+    }
+    
+    function loadOriginalApp() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
