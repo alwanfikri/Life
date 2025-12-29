@@ -245,14 +245,13 @@
 		<input id="finance-filter-category" placeholder="e.g. Food">
 	  </div>
 
-	  <div class="form-group">
-		<label>User</label>
-		<select id="finance-filter-user">
-		  <option value="">All</option>
-		  <option value="fikri">Fikri</option>
-		  <option value="khansa">Khansa</option>
-		</select>
-	  </div>
+		<div class="form-group">
+		  <label>User</label>
+		  <select id="finance-filter-user">
+			<option value="">All</option>
+		  </select>
+		</div>
+
 
 	  <div class="form-group">
 		<label>Visibility</label>
@@ -364,7 +363,7 @@ function showApp(username){
   document.getElementById('home-page').classList.add('active');
   document.getElementById('main-nav').style.display='flex';
   document.getElementById('nav-username').textContent=username;
-
+	populateUserFilters();   // 🟢 here too
   setActiveTab('home');
   showPage('home');
 }
@@ -376,6 +375,24 @@ function saveRecentUser(username){
   list = [username,...list.filter(u=>u!==username)].slice(0,5);
   localStorage.setItem('recentUsers',JSON.stringify(list));
   displayRecentUsers();
+}
+
+function populateUserFilters() {
+  const users = JSON.parse(localStorage.getItem('recentUsers') || '[]');
+
+  const financeSelect = document.getElementById('finance-filter-user');
+
+  if (financeSelect) {
+    // reset
+    financeSelect.innerHTML = `<option value="">All</option>`;
+
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.textContent = u.charAt(0).toUpperCase() + u.slice(1);
+      financeSelect.appendChild(opt);
+    });
+  }
 }
 
 function displayRecentUsers(){
@@ -619,10 +636,14 @@ window.addFinanceEntry = async ()=>{
 // ===== INIT =====
 window.addEventListener('load', async()=>{
   await openDB();
+
+  populateUserFilters();   // 🟢 add this line
+
   const user = getUser();
   if(user) showApp(user);
   else displayRecentUsers();
 });
+
 </script>
 
 
