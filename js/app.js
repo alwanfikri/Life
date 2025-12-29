@@ -1,7 +1,8 @@
-// Simple app.js that doesn't conflict with the inline script
-console.log('Shared Life app.js loaded - minimal version');
+// app.js - Simplified version
+console.log('app.js loaded');
 
-// Export any necessary functions
-export function dummyFunction() {
-  return 'dummy';
+// Export a dummy function so module import doesn't fail
+export function initApp() {
+  console.log('App initialized');
+  return true;
 }
