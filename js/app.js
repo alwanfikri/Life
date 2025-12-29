@@ -1,21 +1,9 @@
-import { setUser, getUser } from './users.js'
 import { openDB } from './db.js'
 
-window.selectUser = function(name) {
-  setUser(name)
-  location.reload()
-}
+console.log('APP MODULE LOADED')
 
 window.onload = async () => {
-  // 1️⃣ Force IndexedDB creation
+  console.log('WINDOW ONLOAD')
   await openDB()
-
-  // 2️⃣ Check active user
-  const user = getUser()
-  if (!user) return
-
-  // 3️⃣ Show app
-  document.getElementById('user-select').hidden = true
-  document.getElementById('app').hidden = false
-  document.getElementById('activeUser').innerText = user
+  console.log('DB OPEN ATTEMPTED')
 }
