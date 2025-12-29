@@ -3,24 +3,35 @@ const DB_VERSION = 1
 
 export function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
+    const request = indexedDB.open(DB_NAME, DB_VERSION)
 
-    req.onupgradeneeded = e => {
+    request.onupgradeneeded = (e) => {
       const db = e.target.result
 
-      db.createObjectStore('journals', { keyPath: 'id' })
-      db.createObjectStore('schedules', { keyPath: 'id' })
-      db.createObjectStore('finance', { keyPath: 'id' })
-      db.createObjectStore('syncQueue', { autoIncrement: true })
+      if (!db.objectStoreNames.contains('journals')) {
+        db.createObjectStore('journals', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('schedules')) {
+        db.createObjectStore('schedules', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('finance')) {
+        db.createObjectStore('finance', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('syncQueue')) {
+        db.createObjectStore('syncQueue', { keyPath: 'id' })
+      }
+
+      console.log('DB upgrade completed')
     }
 
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
-  })
-}
+    request.onsuccess = () => {
+      console.log('DB opened:', DB_NAME)
+      resolve(request.result)
+    }
 
-export async function save(store, data) {
-  const db = await openDB()
-  const tx = db.transaction(store, 'readwrite')
-  tx.objectStore(store).put(data)
+    request.onerror = () => {
+      console.error('DB open failed', request.error)
+      reject(request.error)
+    }
+  })
 }
