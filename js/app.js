@@ -180,3 +180,14 @@ window.onload = async () => {
   document.getElementById('app').hidden = false
   document.getElementById('activeUser').innerText = user
 }
+import { renderDaily } from './daily.js'
+import { renderWeekly } from './weekly.js'
+import { renderMonthly } from './monthly.js'
+import { renderAdd } from './add.js'
+
+window.showView = function(name) {
+  if (name === 'daily') return renderDaily()
+  if (name === 'weekly') return renderWeekly()
+  if (name === 'monthly') return renderMonthly()
+  if (name === 'add') return renderAdd()
+}
