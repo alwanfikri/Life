@@ -7,7 +7,7 @@ export function setUser(name) {
   }
   
   // Add to users list
-  const users = JSON.parse(localStorage.getItem('allUsers') || '[]');
+  const users = getAllUsers();
   if (!users.includes(name)) {
     users.push(name);
     localStorage.setItem('allUsers', JSON.stringify(users));
@@ -18,11 +18,10 @@ export function getUser() {
   return localStorage.getItem('activeUser');
 }
 
-// Add this missing export
 export function getAllUsers() {
   try {
     const users = JSON.parse(localStorage.getItem('allUsers') || '[]');
-    return users;
+    return Array.isArray(users) ? users : [];
   } catch {
     return [];
   }
