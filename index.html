@@ -128,8 +128,10 @@
   let currentPage = 'landing';
 
   function setActiveTab(page){
-    document.querySelectorAll('.nav-tab').forEach(tab=>{
-      tab.classList.toggle('active', tab.dataset.page===page);
+    const tabs = document.querySelectorAll('.nav-tab');
+
+    tabs.forEach(tab=>{
+      tab.classList.toggle('active', tab.dataset.page === page);
     });
   }
 
@@ -137,12 +139,16 @@
     document.querySelectorAll('.tab-page').forEach(p=>{
       p.classList.remove('active');
     });
-    document.getElementById(page+'-page')?.classList.add('active');
+
+    const el = document.getElementById(page+'-page');
+    if (el) el.classList.add('active');
+
     currentPage = page;
+
     if(page==='journal') loadJournalData();
     if(page==='schedule') loadScheduleData();
     if(page==='finance') loadFinanceData();
-    if(page==='home') loadDashboard();
+    if(page==='home')    loadDashboard();
   }
 
   window.navigateTo = function(page){
@@ -152,7 +158,11 @@
 
   window.loginUser = function(){
     const username = document.getElementById('username-input').value.trim();
-    if(!username) return alert('Please enter your name');
+    if(!username){
+      alert('Please enter your name');
+      return;
+    }
+
     setUser(username);
     saveRecentUser(username);
     showApp(username);
@@ -176,8 +186,197 @@
     document.getElementById('home-page').classList.add('active');
     document.getElementById('main-nav').style.display='flex';
     document.getElementById('nav-username').textContent=username;
+
     setActiveTab('home');
     showPage('home');
+  }
+
+  function saveRecentUser(username){
+    let recent = JSON.parse(localStorage.getItem('recentUsers') || '[]');
+    recent = recent.filter(u=>u!==username);
+    recent.unshift(username);
+    recent = recent.slice(0,5);
+    localStorage.setItem('recentUsers', JSON.stringify(recent));
+    displayRecentUsers();
+  }
+
+  function displayRecentUsers(){
+    const recent = JSON.parse(localStorage.getItem('recentUsers') || '[]');
+
+    if(recent.length>0){
+      document.getElementById('recent-users').style.display='block';
+      document.getElementById('user-chips').innerHTML =
+        recent.map(u=>`<button class="user-chip" onclick="quickLogin('${u}')">${u}</button>`).join('');
+    }
+  }
+
+  async function getAll(db, store){
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(store,'readonly');
+      const req = tx.objectStore(store).getAll();
+      req.onsuccess = ()=>resolve(req.result);
+      req.onerror = ()=>reject(req.error);
+    });
+  }
+
+  async function loadDashboard(){
+    const db = await openDB();
+    const journals = await getAll(db,'journals');
+    const schedules = await getAll(db,'schedules');
+    const finance = await getAll(db,'finance');
+
+    document.getElementById('journal-count').textContent = journals.length;
+    document.getElementById('schedule-count').textContent = schedules.length;
+    document.getElementById('finance-count').textContent = finance.length;
+  }
+
+  // Journal
+  window.addJournalEntry = async function(){
+    const text = document.getElementById('journal-text').value.trim();
+    const shared = document.getElementById('journal-shared').checked;
+
+    if(!text){
+      alert('Please write something!');
+      return;
+    }
+
+    await addJournal(text, shared);
+    document.getElementById('journal-text').value='';
+    document.getElementById('journal-shared').checked=false;
+    loadJournalData();
+  };
+
+  async function loadJournalData(){
+    const db = await openDB();
+    const items = await getAll(db,'journals');
+    const listEl = document.getElementById('journal-list');
+
+    if(items.length===0){
+      listEl.innerHTML = '<div class="empty-state">📝<br>No journal entries yet</div>';
+      return;
+    }
+
+    listEl.innerHTML = items
+      .sort((a,b)=>b.createdAt-a.createdAt)
+      .map(item=>`
+        <div class="item-card ${item.shared?'shared':''}">
+          <div class="item-header">
+            <div class="item-badges">
+              <span class="item-badge">${item.owner}</span>
+              ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+            </div>
+            <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+          </div>
+          <p style="margin:0;line-height:1.6;color:#333;">${item.text}</p>
+        </div>
+      `).join('');
+  }
+
+  // Schedule
+  window.addScheduleEntry = async function(){
+    const title = document.getElementById('schedule-title').value.trim();
+    const start = document.getElementById('schedule-start').value;
+    const end   = document.getElementById('schedule-end').value;
+    const shared = document.getElementById('schedule-shared').checked;
+
+    if(!title||!start||!end){
+      alert('Please fill all fields!');
+      return;
+    }
+
+    await addSchedule(title,start,end,shared);
+
+    document.getElementById('schedule-title').value='';
+    document.getElementById('schedule-start').value='';
+    document.getElementById('schedule-end').value='';
+    document.getElementById('schedule-shared').checked=false;
+
+    loadScheduleData();
+  };
+
+  async function loadScheduleData(){
+    const db = await openDB();
+    const items = await getAll(db,'schedules');
+    const listEl = document.getElementById('schedule-list');
+
+    if(items.length===0){
+      listEl.innerHTML = '<div class="empty-state">📅<br>No events scheduled yet</div>';
+      return;
+    }
+
+    listEl.innerHTML = items
+      .sort((a,b)=>new Date(a.start)-new Date(b.start))
+      .map(item=>`
+        <div class="item-card ${item.shared?'shared':''}">
+          <div class="item-header">
+            <div class="item-badges">
+              <span class="item-badge">${item.owner}</span>
+              ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+            </div>
+          </div>
+          <h4 style="margin:8px 0;color:#333;">${item.title}</h4>
+          <p class="item-meta">
+            ${new Date(item.start).toLocaleString()} – ${new Date(item.end).toLocaleString()}
+          </p>
+        </div>
+      `).join('');
+  }
+
+  // Finance
+  window.addFinanceEntry = async function(){
+    const amount = parseFloat(document.getElementById('finance-amount').value);
+    const type = document.getElementById('finance-type').value;
+    const shared = document.getElementById('finance-shared').checked;
+
+    if(!amount||amount<=0){
+      alert('Please enter a valid amount!');
+      return;
+    }
+
+    await addFinance(amount,type,shared);
+
+    document.getElementById('finance-amount').value='';
+    document.getElementById('finance-shared').checked=false;
+
+    loadFinanceData();
+  };
+
+  async function loadFinanceData(){
+    const db = await openDB();
+    const items = await getAll(db,'finance');
+    const listEl = document.getElementById('finance-list');
+    const balanceEl = document.getElementById('balance-display');
+
+    const total = items.reduce((sum,i)=> sum+(i.type==='in'?i.amount:-i.amount),0);
+
+    balanceEl.innerHTML = `
+      <div class="balance-card">
+        <h3>Current Balance</h3>
+        <div class="amount">${total>=0?'+':''}$${total.toFixed(2)}</div>
+      </div>
+    `;
+
+    if(items.length===0){
+      listEl.innerHTML = '<div class="empty-state">💰<br>No transactions yet</div>';
+      return;
+    }
+
+    listEl.innerHTML = items
+      .sort((a,b)=>b.createdAt-a.createdAt)
+      .map(item=>`
+        <div class="item-card ${item.shared?'shared':''}">
+          <div class="item-header">
+            <div class="item-badges">
+              <span class="item-badge">${item.owner}</span>
+              ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+            </div>
+            <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="amount ${item.type==='in'?'income':'expense'}">
+            ${item.type==='in'?'+':'-'}$${item.amount.toFixed(2)}
+          </div>
+        </div>
+      `).join('');
   }
 
   window.addEventListener('load', async()=>{
@@ -187,6 +386,6 @@
     else displayRecentUsers();
   });
 </script>
-
 </body>
 </html>
+
