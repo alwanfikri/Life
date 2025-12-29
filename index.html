@@ -155,285 +155,74 @@
       <button onclick="clearData()">Clear All Data</button>
     </div>
   </div>
+<!-- Remove module imports and use simple scripts -->
+<script src="js/users.js"></script>
+<script src="js/db.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/finance.js"></script>
 
-  <script>
-    // Debug function
-    function updateDebugInfo(message) {
-      const debugEl = document.getElementById('debug-info');
-      debugEl.innerHTML = '<strong>Debug Info:</strong> ' + message;
-      console.log(message);
+<script>
+  // Simple initialization
+  console.log('Shared Life starting...');
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded');
+    
+    // Show landing page initially
+    document.getElementById('landing').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+    
+    // Check for existing user
+    const user = localStorage.getItem('activeUser');
+    if (user) {
+      console.log('Found existing user:', user);
+      startApp(user);
+    }
+  });
+  
+  window.startApp = function() {
+    const username = document.getElementById('username').value.trim();
+    if (!username) {
+      alert('Please enter your name');
+      return;
     }
     
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-      updateDebugInfo('DOM loaded, initializing...');
-      
-      // Check if user exists
-      const username = localStorage.getItem('username');
-      if (username) {
-        updateDebugInfo('User found: ' + username);
-        document.getElementById('current-user-display').textContent = username;
-        switchTab('journal');
-      } else {
-        updateDebugInfo('No user found, showing landing page');
-        switchTab('landing');
-        loadPreviousUsers();
-      }
+    localStorage.setItem('activeUser', username);
+    console.log('User set:', username);
+    
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('current-user').textContent = username;
+  };
+  
+  window.selectExistingUser = function(username) {
+    document.getElementById('username').value = username;
+  };
+  
+  window.switchTab = function(tabName) {
+    console.log('Switching to tab:', tabName);
+    
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.style.display = 'none';
     });
     
-    // Tab switching
-    function switchTab(tabName) {
-      updateDebugInfo('Switching to tab: ' + tabName);
-      
-      // Hide all tabs
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      
-      // Deactivate all buttons
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      
-      // Show selected tab
-      const tabElement = document.getElementById(tabName + '-tab');
-      if (tabElement) {
-        tabElement.classList.add('active');
-      }
-      
-      // Activate clicked button
+    // Show selected tab
+    const tab = document.getElementById(tabName + '-tab');
+    if (tab) {
+      tab.style.display = 'block';
+    }
+    
+    // Update active button
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    if (event.target) {
       event.target.classList.add('active');
-      
-      // Load tab data
-      if (tabName === 'journal') loadJournal();
-      if (tabName === 'schedule') loadSchedule();
-      if (tabName === 'finance') loadFinance();
     }
-    
-    // Username functions
-    function setUsername() {
-      const username = document.getElementById('username').value.trim();
-      if (!username) {
-        alert('Please enter a name');
-        return;
-      }
-      
-      localStorage.setItem('username', username);
-      
-      // Save to users list
-      let users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (!users.includes(username)) {
-        users.push(username);
-        localStorage.setItem('users', JSON.stringify(users));
-      }
-      
-      document.getElementById('current-user-display').textContent = username;
-      updateDebugInfo('Username set to: ' + username);
-      switchTab('journal');
-    }
-    
-    function loadPreviousUsers() {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const container = document.getElementById('previous-users');
-      
-      if (users.length === 0) {
-        container.innerHTML = '<p>No previous users</p>';
-        return;
-      }
-      
-      let html = '';
-      users.forEach(user => {
-        html += `<button onclick="selectUser('${user}')" style="margin: 5px;">${user}</button>`;
-      });
-      container.innerHTML = html;
-    }
-    
-    function selectUser(username) {
-      document.getElementById('username').value = username;
-    }
-    
-    // Journal functions
-    function addJournal() {
-      const text = document.getElementById('journal-text').value.trim();
-      if (!text) {
-        alert('Please enter text');
-        return;
-      }
-      
-      const entry = {
-        id: Date.now(),
-        text: text,
-        date: new Date().toLocaleString(),
-        user: localStorage.getItem('username')
-      };
-      
-      // Save to localStorage
-      let entries = JSON.parse(localStorage.getItem('journalEntries') || '[]');
-      entries.push(entry);
-      localStorage.setItem('journalEntries', JSON.stringify(entries));
-      
-      document.getElementById('journal-text').value = '';
-      loadJournal();
-      updateDebugInfo('Journal entry added');
-    }
-    
-    function loadJournal() {
-      const entries = JSON.parse(localStorage.getItem('journalEntries') || '[]');
-      const container = document.getElementById('journal-list');
-      
-      if (entries.length === 0) {
-        container.innerHTML = '<p>No journal entries yet</p>';
-        return;
-      }
-      
-      let html = '<h3>Your Entries:</h3>';
-      entries.reverse().forEach(entry => {
-        html += `
-          <div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;">
-            <p><strong>${entry.user}</strong> - ${entry.date}</p>
-            <p>${entry.text}</p>
-          </div>
-        `;
-      });
-      
-      container.innerHTML = html;
-    }
-    
-    // Schedule functions
-    function addEvent() {
-      const title = document.getElementById('event-title').value.trim();
-      const start = document.getElementById('event-start').value;
-      const end = document.getElementById('event-end').value;
-      
-      if (!title || !start || !end) {
-        alert('Please fill all fields');
-        return;
-      }
-      
-      const event = {
-        id: Date.now(),
-        title: title,
-        start: start,
-        end: end,
-        date: new Date().toLocaleString(),
-        user: localStorage.getItem('username')
-      };
-      
-      let events = JSON.parse(localStorage.getItem('events') || '[]');
-      events.push(event);
-      localStorage.setItem('events', JSON.stringify(events));
-      
-      document.getElementById('event-title').value = '';
-      document.getElementById('event-start').value = '';
-      document.getElementById('event-end').value = '';
-      loadSchedule();
-      updateDebugInfo('Event added');
-    }
-    
-    function loadSchedule() {
-      const events = JSON.parse(localStorage.getItem('events') || '[]');
-      const container = document.getElementById('schedule-list');
-      
-      if (events.length === 0) {
-        container.innerHTML = '<p>No events yet</p>';
-        return;
-      }
-      
-      let html = '<h3>Your Events:</h3>';
-      events.reverse().forEach(event => {
-        html += `
-          <div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;">
-            <p><strong>${event.title}</strong></p>
-            <p>Start: ${new Date(event.start).toLocaleString()}</p>
-            <p>End: ${new Date(event.end).toLocaleString()}</p>
-            <p><small>By: ${event.user} on ${event.date}</small></p>
-          </div>
-        `;
-      });
-      
-      container.innerHTML = html;
-    }
-    
-    // Finance functions
-    function addTransaction() {
-      const amount = parseFloat(document.getElementById('amount').value);
-      const type = document.getElementById('finance-type').value;
-      
-      if (!amount || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
-      
-      const transaction = {
-        id: Date.now(),
-        amount: amount,
-        type: type,
-        date: new Date().toLocaleString(),
-        user: localStorage.getItem('username')
-      };
-      
-      let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-      transactions.push(transaction);
-      localStorage.setItem('transactions', JSON.stringify(transactions));
-      
-      document.getElementById('amount').value = '';
-      loadFinance();
-      updateDebugInfo('Transaction added');
-    }
-    
-    function loadFinance() {
-      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-      const container = document.getElementById('finance-list');
-      
-      if (transactions.length === 0) {
-        container.innerHTML = '<p>No transactions yet</p>';
-        return;
-      }
-      
-      // Calculate balance
-      let balance = 0;
-      transactions.forEach(t => {
-        if (t.type === 'income') {
-          balance += t.amount;
-        } else {
-          balance -= t.amount;
-        }
-      });
-      
-      let html = `<h3>Balance: $${balance.toFixed(2)}</h3>`;
-      html += '<h4>Transactions:</h4>';
-      
-      transactions.reverse().forEach(t => {
-        const color = t.type === 'income' ? 'green' : 'red';
-        html += `
-          <div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;">
-            <p style="color: ${color}; font-weight: bold;">
-              ${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)} - ${t.type}
-            </p>
-            <p><small>By: ${t.user} on ${t.date}</small></p>
-          </div>
-        `;
-      });
-      
-      container.innerHTML = html;
-    }
-    
-    // Settings functions
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('username');
-        updateDebugInfo('Logged out');
-        location.reload();
-      }
-    }
-    
-    function clearData() {
-      if (confirm('Are you sure you want to clear ALL data? This cannot be undone.')) {
-        localStorage.clear();
-        updateDebugInfo('All data cleared');
-        location.reload();
-      }
-    }
-  </script>
+  };
+</script>  
 </body>
 </html>
