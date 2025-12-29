@@ -18,9 +18,11 @@ export function getUser() {
   return localStorage.getItem('activeUser');
 }
 
+// Add this missing export
 export function getAllUsers() {
   try {
-    return JSON.parse(localStorage.getItem('allUsers') || '[]');
+    const users = JSON.parse(localStorage.getItem('allUsers') || '[]');
+    return users;
   } catch {
     return [];
   }
