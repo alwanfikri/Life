@@ -20,7 +20,7 @@
     <button class="nav-tab" data-page="journal">Journal</button>
     <button class="nav-tab" data-page="schedule">Schedule</button>
     <button class="nav-tab" data-page="finance">Finance</button>
-	<button class="nav-tab" data-page="calendar">Calendar</button>
+    <button class="nav-tab" data-page="calendar">Calendar</button>
     <button class="nav-tab" data-page="settings">Settings</button>
   </div>
 
@@ -179,19 +179,20 @@
     <div id="finance-list"></div>
   </div>
 
-  <!-- SETTINGS -->
+
+  <!-- CALENDAR -->
   <div id="calendar-page" class="tab-page">
 
-  <div class="form-card">
-    <h3>Calendar</h3>
+    <div class="form-card">
+      <h3>Calendar</h3>
 
-    <button onclick="renderCalendar('daily')">Daily</button>
-    <button onclick="renderCalendar('weekly')">Weekly</button>
-    <button onclick="renderCalendar('monthly')">Monthly</button>
+      <button onclick="renderCalendar('daily')">Daily</button>
+      <button onclick="renderCalendar('weekly')">Weekly</button>
+      <button onclick="renderCalendar('monthly')">Monthly</button>
+    </div>
+
+    <div id="calendar-root"></div>
   </div>
-
-  <div id="calendar-root"></div>
-</div>
 
 
   <!-- SETTINGS -->
@@ -243,8 +244,60 @@ import { addSchedule } from "./js/schedule.js";
 import { addFinance } from "./js/finance.js";
 import { openDB } from "./js/db.js";
 import { setUser, getUser } from "./js/users.js";
-import { renderCalendar } from "./js/calendar.js";
+import { renderCalendar as renderCalRaw } from "./js/calendar.js";
 
+
+/* ========= GLOBAL WRAPPERS ========= */
+
+window.renderCalendar = renderCalRaw;
+
+
+/* ========= JOURNAL ========= */
+
+window.addJournalEntry = async ()=>{
+  const text=document.getElementById("journal-text").value.trim();
+  const shared=document.getElementById("journal-shared").checked;
+  if(!text) return;
+  await addJournal(text,shared);
+  document.getElementById("journal-text").value="";
+  loadJournalData();
+};
+
+
+/* ========= SCHEDULE ========= */
+
+window.addScheduleEntry = async ()=>{
+  await addSchedule(
+    document.getElementById("schedule-title").value,
+    document.getElementById("schedule-start").value,
+    document.getElementById("schedule-end").value,
+    document.getElementById("schedule-category").value,
+    document.getElementById("schedule-shared").checked
+  );
+  loadScheduleData();
+};
+
+
+/* ========= FINANCE ========= */
+
+window.addFinanceEntry = async ()=>{
+  await addFinance(
+    parseFloat(document.getElementById("finance-amount").value),
+    document.getElementById("finance-type").value,
+    document.getElementById("finance-category").value,
+    document.getElementById("finance-shared").checked
+  );
+  loadFinanceData();
+};
+
+
+/* ========= LOGOUT ========= */
+
+window.logout = ()=>{
+  document.getElementById("main-nav").style.display="none";
+  document.getElementById("landing-page").classList.add("active");
+  document.querySelectorAll(".tab-page").forEach(p=>p.classList.remove("active"));
+};
 
 
 /* ========= USER LIST UI ========= */
@@ -252,12 +305,10 @@ import { renderCalendar } from "./js/calendar.js";
 function loadLandingUsers(){
   const box=document.getElementById("user-select-list");
   const users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-
   if(users.length===0){
     box.innerHTML="<i>Belum ada user</i>";
     return;
   }
-
   box.innerHTML = users.map(u=>`
     <button class="user-chip" onclick="quickLogin('${u}')">${u}</button>
   `).join("");
@@ -271,68 +322,52 @@ window.quickLogin = u =>{
 window.addUser = ()=>{
   const name=document.getElementById("new-user-input").value.trim();
   if(!name) return;
-
   let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
   users=[name,...users.filter(x=>x!==name)];
   localStorage.setItem("recentUsers",JSON.stringify(users));
-
   alert("User ditambahkan");
   loadUserList();
   loadLandingUsers();
 };
 
 
-/* ========= EXISTING LOGIN ========= */
+/* ========= LOGIN ========= */
 
 window.loginUser = ()=>{
   const u=document.getElementById("username-input").value.trim();
   if(!u) return;
-
   let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
   users=[u,...users.filter(x=>x!==u)];
   localStorage.setItem("recentUsers",JSON.stringify(users));
-
   setUser(u);
   showApp(u);
 };
 
 
-/* ========= SETTINGS USER LIST ========= */
+/* ========= SETTINGS ========= */
 
 window.loadUserList = ()=>{
   const users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
   const box=document.getElementById("user-list");
-
   box.innerHTML = users.map(u=>`
     <div class="item-card">${u}</div>
   `).join("");
 };
 
-
-/* ========= RENAME ========= */
-
 window.renameUser = ()=>{
   const newName=document.getElementById("rename-input").value.trim();
   if(!newName) return;
-
   const old=getUser();
-
   localStorage.setItem("activeUser",newName);
-
   let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
   users=[newName,...users.filter(x=>x!==old)];
   localStorage.setItem("recentUsers",JSON.stringify(users));
-
   alert("Nama diganti");
   location.reload();
 };
 
-
-/* ========= RESET ========= */
-
 window.resetAllData = ()=>{
   if(!confirm("Hapus semua data?")) return;
-
   indexedDB.deleteDatabase("life_beta");
   localStorage.clear();
   location.reload();
@@ -355,8 +390,7 @@ window.navigateTo = page =>{
   document.getElementById(page+"-page").classList.add("active");
 
   if(page==="settings") loadUserList();
-  if(page==="calendar") renderCalendar('monthly');
-
+  if(page==="calendar") renderCalRaw("monthly");
 };
 
 
@@ -375,7 +409,6 @@ function showApp(username){
 window.addEventListener("load", async()=>{
   await openDB();
   loadLandingUsers();
-
   const u=getUser();
   if(u) showApp(u);
 });
