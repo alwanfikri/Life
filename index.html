@@ -467,7 +467,7 @@ window.loadJournalData = async ()=>{
             <span class="item-badge">${item.owner}</span>
             ${item.shared?'<span class="item-badge shared">Shared</span>':''}
           </div>
-          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
         </div>
         <p>${item.text}</p>
       </div>
@@ -544,8 +544,8 @@ window.loadScheduleData = async ()=>{
         </div>
         <h4>${item.title}</h4>
         <p class="item-meta">
-          ${new Date(item.start).toLocaleString()} – 
-          ${new Date(item.end).toLocaleString()}
+          ${new Date(item.start).toLocaleString('id-ID')} – 
+          ${new Date(item.end).toLocaleString('id-ID')}
         </p>
       </div>
     `).join('');
@@ -601,7 +601,7 @@ window.addFinanceEntry = async ()=>{
 		<div class="balance-card">
 		  <h3>Filtered Balance</h3>
 		  <div class="amount">
-			${total>=0?'+':''}$${total.toFixed(2)}
+			${total>=0?'+':''}${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(total)}
 		  </div>
 		</div>
 	  `;
@@ -621,11 +621,11 @@ window.addFinanceEntry = async ()=>{
 				${item.category?`<span class="item-badge">${item.category}</span>`:''}
 				${item.shared?'<span class="item-badge shared">Shared</span>':''}
 			  </div>
-			  <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+			  <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
 			</div>
 
 			<div class="amount ${item.type==='in'?'income':'expense'}">
-			  ${item.type==='in'?'+':'-'}$${item.amount.toFixed(2)}
+			  ${item.type==='in'?'+':'-'}${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.amount)}
 			</div>
 		  </div>
 		`).join('');
