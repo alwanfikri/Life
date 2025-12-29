@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <title>Shared Life</title>
@@ -10,90 +10,41 @@
   <link rel="stylesheet" href="css/layout.css">
 
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 0; }
+    *{box-sizing:border-box}
+    body{margin:0;padding:0}
 
-    nav { background:#1976D2;color:white;padding:0;display:flex;align-items:center;box-shadow:0 2px 4px rgba(0,0,0,0.1);}
-    .nav-brand{padding:16px 24px;font-size:20px;font-weight:600;}
-    .nav-tabs{display:flex;flex:1;}
-    .nav-tab{padding:16px 24px;background:none;border:none;color:white;cursor:pointer;font-size:16px;border-bottom:3px solid transparent;transition:all .3s;}
-    .nav-tab:hover{background:rgba(255,255,255,0.1);}
-    .nav-tab.active{background:rgba(255,255,255,0.2);border-bottom-color:white;}
-    .nav-user{padding:16px 24px;display:flex;align-items:center;gap:12px;}
-    .nav-user button{background:rgba(255,255,255,0.2);color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:14px;}
-    .nav-user button:hover{background:rgba(255,255,255,0.3);}
+    nav{background:#1976D2;color:white;padding:0;display:flex;align-items:center;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+    .nav-brand{padding:16px 24px;font-size:20px;font-weight:600}
+    .nav-tabs{display:flex;flex:1}
+    .nav-tab{padding:16px 24px;background:none;border:none;color:white;cursor:pointer;font-size:16px;border-bottom:3px solid transparent;transition:.3s}
+    .nav-tab.active{background:rgba(255,255,255,.2);border-bottom-color:#fff}
+    .nav-user{padding:16px 24px;display:flex;gap:12px;align-items:center}
 
-    .page-container{max-width:1200px;margin:0 auto;padding:24px;}
+    .page-container{max-width:1100px;margin:0 auto;padding:24px}
 
-    .landing{text-align:center;padding:60px 20px;}
-    .landing h1{font-size:48px;margin-bottom:16px;color:#1976D2;}
-    .landing p{font-size:20px;color:#666;margin-bottom:40px;}
+    .tab-page{display:none}
+    .tab-page.active{display:block}
 
-    .user-form{max-width:400px;margin:0 auto;background:white;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-    .user-form h3{margin-top:0;margin-bottom:24px;color:#333;}
-    .user-form input{width:100%;padding:12px;border:2px solid #ddd;border-radius:6px;font-size:16px;margin-bottom:16px;}
-    .user-form input:focus{outline:none;border-color:#1976D2;}
-    .user-form button{width:100%;padding:14px;background:#1976D2;color:white;border:none;border-radius:6px;font-size:16px;cursor:pointer;font-weight:600;}
-    .user-form button:hover{background:#1565C0;}
+    .form-card{background:white;padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:24px}
 
-    .recent-users{margin-top:24px;padding-top:24px;border-top:1px solid #eee;}
-    .recent-users h4{margin-bottom:12px;color:#666;font-size:14px;font-weight:normal;}
-    .user-chips{display:flex;flex-wrap:wrap;gap:8px;}
-    .user-chip{padding:8px 16px;background:#E3F2FD;color:#1976D2;border:none;border-radius:20px;cursor:pointer;font-size:14px;}
-    .user-chip:hover{background:#BBDEFB;}
+    .btn-primary{background:#1976D2;color:white;padding:12px;border-radius:6px;border:none;width:100%}
 
-    .tab-page{display:none;}
-    .tab-page.active{display:block;}
+    .item-card{background:white;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:12px;border-left:4px solid #1976D2}
+    .item-card.shared{background:#E8F5E9;border-left-color:#4CAF50}
 
-    .form-card{background:white;padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:24px;}
-    .form-card h3{margin-top:0;margin-bottom:20px;color:#333;}
+    .item-badge{padding:4px 10px;border-radius:12px;background:#1976D2;color:white;font-size:12px}
+    .item-badge.shared{background:#4CAF50}
 
-    .form-group{margin-bottom:16px;}
-    .form-group label{display:block;margin-bottom:6px;font-weight:500;color:#555;}
-    .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;font-family:inherit;}
-    .form-group textarea{min-height:120px;resize:vertical;}
+    .amount{font-size:22px;font-weight:bold}
+    .income{color:#4CAF50}
+    .expense{color:#f44336}
 
-    .checkbox-group{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
-    .checkbox-group input{width:18px;height:18px;cursor:pointer;}
-
-    .btn-primary{background:#1976D2;color:white;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-size:16px;width:100%;font-weight:600;}
-    .btn-primary:hover{background:#1565C0;}
-
-    .items-list{margin-top:24px;}
-
-    .item-card{background:white;padding:20px;margin-bottom:12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);border-left:4px solid #1976D2;}
-    .item-card.shared{background:#E8F5E9;border-left-color:#4CAF50;}
-
-    .item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-    .item-badges{display:flex;gap:8px;}
-
-    .item-badge{display:inline-block;padding:4px 10px;background:#1976D2;color:white;border-radius:12px;font-size:12px;font-weight:500;}
-    .item-badge.shared{background:#4CAF50;}
-
-    .item-meta{color:#666;font-size:13px;}
-
-    .amount{font-size:28px;font-weight:bold;margin:12px 0;}
-    .amount.income{color:#4CAF50;}
-    .amount.expense{color:#f44336;}
-
-    .balance-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:24px;border-radius:12px;margin-bottom:24px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-    .balance-card h3{margin:0 0 8px;font-size:16px;opacity:.9;}
-    .balance-card .amount{color:white;margin:0;}
-
-    .empty-state{text-align:center;padding:60px 20px;color:#999;}
-
-    @media(max-width:768px){
-      nav{flex-direction:column;align-items:stretch;}
-      .nav-tabs{flex-direction:column;}
-      .nav-tab{border-bottom:none;border-left:3px solid transparent;}
-      .nav-tab.active{border-left-color:white;border-bottom-color:transparent;}
-    }
+    .balance-card{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:12px;margin-bottom:16px}
   </style>
 </head>
 
 <body>
 
-<!-- NAV (hidden until login) -->
 <nav id="main-nav" style="display:none;">
   <div class="nav-brand">Shared Life</div>
 
@@ -116,194 +67,124 @@
 
   <!-- LANDING -->
   <div id="landing-page" class="tab-page active">
-    <div class="landing">
-      <h1>Welcome to Shared Life</h1>
-      <p>Track your journal, schedule, and finances together</p>
+    <div class="form-card">
+      <h2>Selamat datang 👋</h2>
+      <p>Masukkan nama kamu</p>
+      <input id="username-input" placeholder="misal: fikri">
+      <button class="btn-primary" onclick="loginUser()">Masuk</button>
 
-      <div class="user-form">
-        <h3>Enter Your Name</h3>
-        <input type="text" id="username-input" placeholder="Your name"/>
-        <button onclick="loginUser()">Continue</button>
-
-        <div class="recent-users" id="recent-users" style="display:none;">
-          <h4>Recent users:</h4>
-          <div class="user-chips" id="user-chips"></div>
-        </div>
+      <div id="recent-users" style="margin-top:16px;display:none;">
+        <h4>Pengguna terakhir:</h4>
+        <div id="user-chips"></div>
       </div>
     </div>
   </div>
+
 
   <!-- HOME -->
   <div id="home-page" class="tab-page">
     <h2>Dashboard</h2>
-    <p>Welcome back! Here's your overview.</p>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-top:24px;">
-      <div class="form-card" style="text-align:center;">
-        <h3 style="color:#1976D2;">Journal Entries</h3>
-        <div id="journal-count" style="font-size:48px;font-weight:bold;color:#1976D2;">0</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;">
+      <div class="form-card">
+        <h3>Journal</h3>
+        <div id="journal-count" style="font-size:40px;">0</div>
       </div>
-
-      <div class="form-card" style="text-align:center;">
-        <h3 style="color:#FF9800;">Scheduled Events</h3>
-        <div id="schedule-count" style="font-size:48px;font-weight:bold;color:#FF9800;">0</div>
+      <div class="form-card">
+        <h3>Schedule</h3>
+        <div id="schedule-count" style="font-size:40px;">0</div>
       </div>
-
-      <div class="form-card" style="text-align:center;">
-        <h3 style="color:#4CAF50;">Transactions</h3>
-        <div id="finance-count" style="font-size:48px;font-weight:bold;color:#4CAF50;">0</div>
+      <div class="form-card">
+        <h3>Transaksi</h3>
+        <div id="finance-count" style="font-size:40px;">0</div>
       </div>
     </div>
   </div>
+
 
   <!-- JOURNAL -->
   <div id="journal-page" class="tab-page">
+
     <div class="form-card">
-      <h3>New Journal Entry</h3>
+      <h3>Journal Baru</h3>
+      <textarea id="journal-text"></textarea>
 
-      <div class="form-group">
-        <label>Write your thoughts</label>
-        <textarea id="journal-text"></textarea>
-      </div>
+      <label><input type="checkbox" id="journal-shared"> Shared</label>
 
-      <div class="checkbox-group">
-        <input type="checkbox" id="journal-shared">
-        <label for="journal-shared">Share with others</label>
-      </div>
-
-      <button class="btn-primary" onclick="addJournalEntry()">Add Entry</button>
+      <button class="btn-primary" onclick="addJournalEntry()">Simpan</button>
     </div>
 
-    <div id="journal-list" class="items-list"></div>
+    <div id="journal-list"></div>
   </div>
+
 
   <!-- SCHEDULE -->
   <div id="schedule-page" class="tab-page">
-		<div class="form-card">
-	  <h3>Filters</h3>
 
-	  <div class="form-group">
-		<label>Category</label>
-		<input id="schedule-filter-category" placeholder="e.g. Meeting">
-	  </div>
+    <div class="form-card">
+      <h3>Jadwal Baru</h3>
+      <input id="schedule-title" placeholder="judul"><br><br>
+      <input id="schedule-category" placeholder="kategori"><br><br>
+      <input id="schedule-start" type="datetime-local"><br><br>
+      <input id="schedule-end" type="datetime-local"><br><br>
+      <label><input type="checkbox" id="schedule-shared"> Shared</label>
 
-	  <div class="form-group">
-		<label>Range</label>
-		<select id="schedule-filter-range">
-		  <option value="">All</option>
-		  <option value="today">Today</option>
-		  <option value="week">This Week</option>
-		</select>
-	  </div>
-
-	  <button class="btn-primary" onclick="loadScheduleData()">Apply</button>
-	</div>
-
-	<div class="form-card">
-      <h3>New Event</h3>
-
-      <div class="form-group">
-        <label>Event Title</label>
-        <input id="schedule-title" type="text">
-      </div>
-		<div class="form-group">
-		  <label>Category</label>
-		  <input id="schedule-category" type="text" placeholder="e.g. Meeting, Family, Travel">
-		</div>
-
-      <div class="form-group">
-        <label>Start</label>
-        <input id="schedule-start" type="datetime-local">
-      </div>
-
-      <div class="form-group">
-        <label>End</label>
-        <input id="schedule-end" type="datetime-local">
-      </div>
-
-      <div class="checkbox-group">
-        <input type="checkbox" id="schedule-shared">
-        <label for="schedule-shared">Share with others</label>
-      </div>
-
-      <button class="btn-primary" onclick="addScheduleEntry()">Add Event</button>
+      <button class="btn-primary" onclick="addScheduleEntry()">Simpan</button>
     </div>
 
-    <div id="schedule-list" class="items-list"></div>
+    <div id="schedule-list"></div>
   </div>
+
 
   <!-- FINANCE -->
   <div id="finance-page" class="tab-page">
 
     <div id="balance-display"></div>
-	
-	<div class="form-card">
-	  <h3>Filters</h3>
-
-	  <div class="form-group">
-		<label>Category</label>
-		<input id="finance-filter-category" placeholder="e.g. Food">
-	  </div>
-
-		<div class="form-group">
-		  <label>User</label>
-		  <select id="finance-filter-user">
-			<option value="">All</option>
-		  </select>
-		</div>
-
-
-	  <div class="form-group">
-		<label>Visibility</label>
-		<select id="finance-filter-shared">
-		  <option value="">All</option>
-		  <option value="true">Shared</option>
-		  <option value="false">Private</option>
-		</select>
-	  </div>
-
-	  <button class="btn-primary" onclick="loadFinanceData()">Apply</button>
-	</div>
 
     <div class="form-card">
-      <h3>New Transaction</h3>
+      <h3>Transaksi Baru</h3>
 
-      <div class="form-group">
-        <label>Amount</label>
-        <input id="finance-amount" type="number" step="0.01">
-      </div>
+      <input id="finance-amount" type="number" placeholder="jumlah"><br><br>
 
-      <div class="form-group">
-        <label>Type</label>
-        <select id="finance-type">
-          <option value="in">Income</option>
-          <option value="out">Expense</option>
-        </select>
-      </div>
-		<div class="form-group">
-		  <label>Category</label>
-		  <input id="finance-category" type="text" placeholder="e.g. Food, Bills, Salary">
-		</div>
+      <select id="finance-type">
+        <option value="in">Pemasukan</option>
+        <option value="out">Pengeluaran</option>
+      </select><br><br>
 
-      <div class="checkbox-group">
-        <input type="checkbox" id="finance-shared">
-        <label for="finance-shared">Shared transaction</label>
-      </div>
+      <input id="finance-category" placeholder="kategori"><br><br>
 
-      <button class="btn-primary" onclick="addFinanceEntry()">Add Transaction</button>
+      <label><input type="checkbox" id="finance-shared"> Shared</label>
+
+      <button class="btn-primary" onclick="addFinanceEntry()">Simpan</button>
     </div>
 
-    <div id="finance-list" class="items-list"></div>
+    <div class="form-card">
+      <h3>Filter</h3>
+
+      <input id="finance-filter-category" placeholder="kategori"><br><br>
+
+      <select id="finance-filter-user">
+        <option value="">Semua</option>
+      </select><br><br>
+
+      <select id="finance-filter-shared">
+        <option value="">Semua</option>
+        <option value="true">Shared</option>
+        <option value="false">Pribadi</option>
+      </select><br><br>
+
+      <button class="btn-primary" onclick="loadFinanceData()">Terapkan</button>
+    </div>
+
+    <div id="finance-list"></div>
   </div>
 
 </div>
 
 
-<!-- MAIN APP LOGIC -->
 <script type="module" src="js/app.js"></script>
 
 
-<!-- UI SCRIPT -->
 <script type="module">
 import { addJournal } from './js/journal.js';
 import { addSchedule } from './js/schedule.js';
@@ -311,51 +192,86 @@ import { addFinance } from './js/finance.js';
 import { openDB } from './js/db.js';
 import { setUser, getUser } from './js/users.js';
 
-let currentPage = 'landing';
 
-// ===== NAV =====
-function setActiveTab(page){
-  document.querySelectorAll('.nav-tab').forEach(tab=>{
-    tab.classList.toggle('active', tab.dataset.page===page);
+// ========= HELPERS =========
+function formatRupiah(num){
+  return new Intl.NumberFormat('id-ID',{
+    style:'currency',
+    currency:'IDR',
+    minimumFractionDigits:0
+  }).format(num);
+}
+
+function formatDateTime(d){
+  return new Date(d).toLocaleString('id-ID',{
+    weekday:'long',
+    year:'numeric',
+    month:'long',
+    day:'numeric',
+    hour:'2-digit',
+    minute:'2-digit'
   });
 }
 
-function showPage(page){
-  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(page+'-page')?.classList.add('active');
-  currentPage = page;
+function formatDate(d){
+  return new Date(d).toLocaleDateString('id-ID',{
+    weekday:'long',
+    year:'numeric',
+    month:'long',
+    day:'numeric'
+  });
+}
+
+
+// ========= NAVIGATION =========
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>navigateTo(tab.dataset.page));
+});
+
+window.navigateTo = page =>{
+  document.querySelectorAll('.nav-tab')
+    .forEach(t=>t.classList.toggle('active',t.dataset.page===page));
+
+  document.querySelectorAll('.tab-page')
+    .forEach(p=>p.classList.remove('active'));
+
+  document.getElementById(page+'-page').classList.add('active');
 
   if(page==='home') loadDashboard();
   if(page==='journal') loadJournalData();
   if(page==='schedule') loadScheduleData();
   if(page==='finance') loadFinanceData();
-}
-
-document.querySelectorAll('.nav-tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>navigateTo(tab.dataset.page));
-});
-
-window.navigateTo = page =>{
-  setActiveTab(page);
-  showPage(page);
 };
 
 
-// ===== LOGIN =====
+// ========= USERS =========
+function populateUserFilters(){
+  const users = JSON.parse(localStorage.getItem('recentUsers')||'[]');
+  const select = document.getElementById('finance-filter-user');
+  select.innerHTML=`<option value="">Semua</option>`;
+  users.forEach(u=>{
+    const opt=document.createElement('option');
+    opt.value=u;
+    opt.textContent=u;
+    select.appendChild(opt);
+  });
+}
+
 window.loginUser = ()=>{
-  const username = document.getElementById('username-input').value.trim();
-  if(!username) return alert('Please enter your name');
-  setUser(username);
-  saveRecentUser(username);
-  showApp(username);
+  const u=document.getElementById('username-input').value.trim();
+  if(!u) return;
+  setUser(u);
+
+  let r=JSON.parse(localStorage.getItem('recentUsers')||'[]');
+  r=[u,...r.filter(x=>x!==u)].slice(0,5);
+  localStorage.setItem('recentUsers',JSON.stringify(r));
+
+  showApp(u);
 };
 
 window.logout = ()=>{
-  if(confirm('Logout?')){
-    document.getElementById('main-nav').style.display='none';
-    showPage('landing');
-    document.getElementById('username-input').value='';
-  }
+  document.getElementById('main-nav').style.display='none';
+  navigateTo('landing');
 };
 
 function showApp(username){
@@ -363,309 +279,144 @@ function showApp(username){
   document.getElementById('home-page').classList.add('active');
   document.getElementById('main-nav').style.display='flex';
   document.getElementById('nav-username').textContent=username;
-	populateUserFilters();   // 🟢 here too
-  setActiveTab('home');
-  showPage('home');
+
+  populateUserFilters();
+  loadDashboard();
 }
 
 
-// ===== RECENT USERS =====
-function saveRecentUser(username){
-  let list = JSON.parse(localStorage.getItem('recentUsers')||'[]');
-  list = [username,...list.filter(u=>u!==username)].slice(0,5);
-  localStorage.setItem('recentUsers',JSON.stringify(list));
-  displayRecentUsers();
-}
-
-function populateUserFilters() {
-  const users = JSON.parse(localStorage.getItem('recentUsers') || '[]');
-
-  const financeSelect = document.getElementById('finance-filter-user');
-
-  if (financeSelect) {
-    // reset
-    financeSelect.innerHTML = `<option value="">All</option>`;
-
-    users.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u;
-      opt.textContent = u.charAt(0).toUpperCase() + u.slice(1);
-      financeSelect.appendChild(opt);
-    });
-  }
-}
-
-function displayRecentUsers(){
-  const list = JSON.parse(localStorage.getItem('recentUsers')||'[]');
-  if(list.length){
-    document.getElementById('recent-users').style.display='block';
-    document.getElementById('user-chips').innerHTML =
-      list.map(u=>`<button class="user-chip" onclick="quickLogin('${u}')">${u}</button>`).join('');
-  }
-}
-
-window.quickLogin = username=>{
-  setUser(username);
-  showApp(username);
-};
-
-
-// ===== DB HELPERS =====
-async function getAll(db, store){
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(store,'readonly');
-    const req = tx.objectStore(store).getAll();
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
+// ========= DB HELPER =========
+async function getAll(db,store){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(store,'readonly');
+    const req=tx.objectStore(store).getAll();
+    req.onsuccess=()=>res(req.result);
+    req.onerror=()=>rej(req.error);
   });
 }
 
 
-// ===== DASHBOARD =====
+// ========= DASHBOARD =========
 window.loadDashboard = async ()=>{
-  const db = await openDB();
-  const journals = await getAll(db,'journals');
-  const schedules = await getAll(db,'schedules');
-  const finance = await getAll(db,'finance');
-
-  document.getElementById('journal-count').textContent = journals.length;
-  document.getElementById('schedule-count').textContent = schedules.length;
-  document.getElementById('finance-count').textContent = finance.length;
+  const db=await openDB();
+  document.getElementById('journal-count').textContent=(await getAll(db,'journals')).length;
+  document.getElementById('schedule-count').textContent=(await getAll(db,'schedules')).length;
+  document.getElementById('finance-count').textContent=(await getAll(db,'finance')).length;
 };
 
 
-// ===== JOURNAL =====
+// ========= JOURNAL =========
 window.addJournalEntry = async ()=>{
-  const text = document.getElementById('journal-text').value.trim();
-  const shared = document.getElementById('journal-shared').checked;
-  if(!text) return alert('Please write something');
-
-  await addJournal(text, shared);
-
+  const text=document.getElementById('journal-text').value.trim();
+  const shared=document.getElementById('journal-shared').checked;
+  if(!text) return;
+  await addJournal(text,shared);
   document.getElementById('journal-text').value='';
-  document.getElementById('journal-shared').checked=false;
-
   loadJournalData();
 };
 
 window.loadJournalData = async ()=>{
-  const db = await openDB();
-  const items = await getAll(db,'journals');
-  const list = document.getElementById('journal-list');
+  const db=await openDB();
+  const list=document.getElementById('journal-list');
+  const items=await getAll(db,'journals');
 
-  if(!items.length){
-    list.innerHTML = '<div class="empty-state">📝<br>No entries yet</div>';
-    return;
-  }
-
-  list.innerHTML = items
-    .sort((a,b)=>b.createdAt-a.createdAt)
-    .map(item=>`
-      <div class="item-card ${item.shared?'shared':''}">
-        <div class="item-header">
-          <div class="item-badges">
-            <span class="item-badge">${item.owner}</span>
-            ${item.shared?'<span class="item-badge shared">Shared</span>':''}
-          </div>
-          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}</span>
-        </div>
-        <p>${item.text}</p>
+  list.innerHTML = items.sort((a,b)=>b.createdAt-a.createdAt).map(i=>`
+    <div class="item-card ${i.shared?'shared':''}">
+      <div class="item-header">
+        <span class="item-badge">${i.owner}</span>
+        ${i.shared?'<span class="item-badge shared">Shared</span>':''}
       </div>
-    `).join('');
+      <p>${i.text}</p>
+      <div class="item-meta">${formatDateTime(i.createdAt)}</div>
+    </div>
+  `).join('');
 };
 
 
-// ===== SCHEDULE =====
+// ========= SCHEDULE =========
 window.addScheduleEntry = async ()=>{
-  const title = document.getElementById('schedule-title').value.trim();
-  const start = document.getElementById('schedule-start').value;
-  const end = document.getElementById('schedule-end').value;
-  const category = document.getElementById('schedule-category').value.trim();
-  const shared = document.getElementById('schedule-shared').checked;
-
-  if(!title||!start||!end)
-    return alert('Fill all fields');
-
-  await addSchedule(title,start,end,category,shared);
-
-  document.getElementById('schedule-title').value='';
-  document.getElementById('schedule-start').value='';
-  document.getElementById('schedule-end').value='';
-  document.getElementById('schedule-category').value='';
-  document.getElementById('schedule-shared').checked=false;
-
+  await addSchedule(
+    document.getElementById('schedule-title').value,
+    document.getElementById('schedule-start').value,
+    document.getElementById('schedule-end').value,
+    document.getElementById('schedule-category').value,
+    document.getElementById('schedule-shared').checked
+  );
   loadScheduleData();
 };
 
-
 window.loadScheduleData = async ()=>{
-  const db = await openDB();
-  const items = await getAll(db,'schedules');
-  const list = document.getElementById('schedule-list');
+  const db=await openDB();
+  const list=document.getElementById('schedule-list');
+  const items=await getAll(db,'schedules');
 
-  const cat = document.getElementById('schedule-filter-category')?.value.trim().toLowerCase() || '';
-  const range = document.getElementById('schedule-filter-range')?.value || '';
-
-  let filtered = items;
-
-  if(cat)
-    filtered = filtered.filter(i => (i.category||'').toLowerCase().includes(cat));
-
-  if(range==='today'){
-    const today = new Date().toDateString();
-    filtered = filtered.filter(i => new Date(i.start).toDateString()===today);
-  }
-
-  if(range==='week'){
-    const now = new Date();
-    const week = now.getWeek?.() ?? null;
-    const year = now.getFullYear();
-    filtered = filtered.filter(i=>{
-      const d = new Date(i.start);
-      return d.getFullYear()===year && d.getWeek?.()===week;
-    });
-  }
-
-  if(!filtered.length){
-    list.innerHTML = '<div class="empty-state">📅<br>No matching events</div>';
-    return;
-  }
-
-  list.innerHTML = filtered
-    .sort((a,b)=>new Date(a.start)-new Date(b.start))
-    .map(item=>`
-      <div class="item-card ${item.shared?'shared':''}">
-        <div class="item-header">
-          <div class="item-badges">
-            <span class="item-badge">${item.owner}</span>
-            ${item.category?`<span class="item-badge">${item.category}</span>`:''}
-            ${item.shared?'<span class="item-badge shared">Shared</span>':''}
-          </div>
-        </div>
-        <h4>${item.title}</h4>
-        <p class="item-meta">
-          ${new Date(item.start).toLocaleString('id-ID', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})} – 
-          ${new Date(item.end).toLocaleString('id-ID', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}
-        </p>
+  list.innerHTML = items.map(i=>`
+    <div class="item-card ${i.shared?'shared':''}">
+      <div class="item-badges">
+        <span class="item-badge">${i.owner}</span>
+        ${i.category?`<span class="item-badge">${i.category}</span>`:''}
       </div>
-    `).join('');
+      <h4>${i.title}</h4>
+      <div class="item-meta">
+        ${formatDateTime(i.start)} – ${formatDateTime(i.end)}
+      </div>
+    </div>
+  `).join('');
 };
 
 
-
-// ===== FINANCE =====
+// ========= FINANCE =========
 window.addFinanceEntry = async ()=>{
-  const amount = parseFloat(document.getElementById('finance-amount').value);
-  const type = document.getElementById('finance-type').value;
-  const category = document.getElementById('finance-category').value.trim();
-  const shared = document.getElementById('finance-shared').checked;
-
-  if(!amount||amount<=0)
-    return alert('Enter valid amount');
-
-  await addFinance(amount,type,category,shared);
-
-  document.getElementById('finance-amount').value='';
-  document.getElementById('finance-category').value='';
-  document.getElementById('finance-shared').checked=false;
-
+  await addFinance(
+    parseFloat(document.getElementById('finance-amount').value),
+    document.getElementById('finance-type').value,
+    document.getElementById('finance-category').value,
+    document.getElementById('finance-shared').checked
+  );
   loadFinanceData();
 };
 
+window.loadFinanceData = async ()=>{
+  const db=await openDB();
+  const items=await getAll(db,'finance');
+  const list=document.getElementById('finance-list');
+  const balance=document.getElementById('balance-display');
+  const user=getUser();
 
-	window.loadFinanceData = async ()=>{
-	  const db = await openDB();
-	  const items = await getAll(db,'finance');
-	  const list = document.getElementById('finance-list');
-	  const balance = document.getElementById('balance-display');
+  const sharedTotal = items.reduce((s,i)=>s+(i.shared?(i.type==='in'?i.amount:-i.amount):0),0);
+  const myPrivate = items.reduce((s,i)=>s+(!i.shared&&i.owner===user?(i.type==='in'?i.amount:-i.amount):0),0);
 
-	  const cat = document.getElementById('finance-filter-category')?.value.trim().toLowerCase() || '';
-	  const user = document.getElementById('finance-filter-user')?.value || '';
-	  const shared = document.getElementById('finance-filter-shared')?.value || '';
+  balance.innerHTML=`
+    <div class="balance-card">
+      <div>Saldo Shared: <b>${formatRupiah(sharedTotal)}</b></div>
+      <div>Saldo Kamu: <b>${formatRupiah(myPrivate)}</b></div>
+      <div>Total Kamu: <b>${formatRupiah(sharedTotal+myPrivate)}</b></div>
+    </div>
+  `;
 
-	  let filtered = items;
-
-	  if(cat)
-		filtered = filtered.filter(i => (i.category||'').toLowerCase().includes(cat));
-
-	  if(user)
-		filtered = filtered.filter(i => i.owner === user);
-
-	  if(shared)
-		filtered = filtered.filter(i => String(i.shared) === shared);
-
-	  const total = filtered.reduce(
-		(s,i)=>s+(i.type==='in'?i.amount:-i.amount),0);
-
-	  balance.innerHTML = `
-		<div class="balance-card">
-		  <h3>Filtered Balance</h3>
-		  <div class="amount">
-			${total>=0?'+':''}${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(total)}
-		  </div>
-		</div>
-	  `;
-
-	  if(!filtered.length){
-		list.innerHTML = '<div class="empty-state">💰<br>No matching transactions</div>';
-		return;
-	  }
-
-	  list.innerHTML = filtered
-		.sort((a,b)=>b.createdAt-a.createdAt)
-		.map(item=>`
-		  <div class="item-card ${item.shared?'shared':''}">
-			<div class="item-header">
-			  <div class="item-badges">
-				<span class="item-badge">${item.owner}</span>
-				${item.category?`<span class="item-badge">${item.category}</span>`:''}
-				${item.shared?'<span class="item-badge shared">Shared</span>':''}
-			  </div>
-			  <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}</span>
-			</div>
-
-			<div class="amount ${item.type==='in'?'income':'expense'}">
-			  ${item.type==='in'?'+':'-'}${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.amount)}
-			</div>
-		  </div>
-		`).join('');
-	};
+  list.innerHTML = items.sort((a,b)=>b.createdAt-a.createdAt).map(i=>`
+    <div class="item-card ${i.shared?'shared':''}">
+      <div class="item-badges">
+        <span class="item-badge">${i.owner}</span>
+        ${i.category?`<span class="item-badge">${i.category}</span>`:''}
+      </div>
+      <div class="amount ${i.type==='in'?'income':'expense'}">
+        ${i.type==='in'?'+':'-'}${formatRupiah(i.amount)}
+      </div>
+      <div class="item-meta">${formatDate(i.createdAt)}</div>
+    </div>
+  `).join('');
+};
 
 
-
-// ===== INIT =====
+// ========= INIT =========
 window.addEventListener('load', async()=>{
   await openDB();
-
-  populateUserFilters();   // 🟢 add this line
-
-  const user = getUser();
-  if(user) showApp(user);
-  else displayRecentUsers();
+  populateUserFilters();
+  const u=getUser();
+  if(u) showApp(u);
 });
-
 </script>
-
 
 </body>
 </html>
