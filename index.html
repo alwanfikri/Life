@@ -467,7 +467,12 @@ window.loadJournalData = async ()=>{
             <span class="item-badge">${item.owner}</span>
             ${item.shared?'<span class="item-badge shared">Shared</span>':''}
           </div>
-          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
+          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}</span>
         </div>
         <p>${item.text}</p>
       </div>
@@ -544,8 +549,18 @@ window.loadScheduleData = async ()=>{
         </div>
         <h4>${item.title}</h4>
         <p class="item-meta">
-          ${new Date(item.start).toLocaleString('id-ID')} – 
-          ${new Date(item.end).toLocaleString('id-ID')}
+          ${new Date(item.start).toLocaleString('id-ID', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})} – 
+          ${new Date(item.end).toLocaleString('id-ID', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}
         </p>
       </div>
     `).join('');
@@ -621,7 +636,12 @@ window.addFinanceEntry = async ()=>{
 				${item.category?`<span class="item-badge">${item.category}</span>`:''}
 				${item.shared?'<span class="item-badge shared">Shared</span>':''}
 			  </div>
-			  <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
+			  <span class="item-meta">${new Date(item.createdAt).toLocaleDateString('id-ID', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}</span>
 			</div>
 
 			<div class="amount ${item.type==='in'?'income':'expense'}">
