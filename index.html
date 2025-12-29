@@ -20,6 +20,7 @@
     <button class="nav-tab" data-page="journal">Journal</button>
     <button class="nav-tab" data-page="schedule">Schedule</button>
     <button class="nav-tab" data-page="finance">Finance</button>
+	<button class="nav-tab" data-page="calendar">Calendar</button>
     <button class="nav-tab" data-page="settings">Settings</button>
   </div>
 
@@ -178,6 +179,20 @@
     <div id="finance-list"></div>
   </div>
 
+  <!-- SETTINGS -->
+  <div id="calendar-page" class="tab-page">
+
+  <div class="form-card">
+    <h3>Calendar</h3>
+
+    <button onclick="renderCalendar('daily')">Daily</button>
+    <button onclick="renderCalendar('weekly')">Weekly</button>
+    <button onclick="renderCalendar('monthly')">Monthly</button>
+  </div>
+
+  <div id="calendar-root"></div>
+</div>
+
 
   <!-- SETTINGS -->
   <div id="settings-page" class="tab-page">
@@ -228,6 +243,8 @@ import { addSchedule } from "./js/schedule.js";
 import { addFinance } from "./js/finance.js";
 import { openDB } from "./js/db.js";
 import { setUser, getUser } from "./js/users.js";
+import { renderCalendar } from "./js/calendar.js";
+
 
 
 /* ========= USER LIST UI ========= */
@@ -338,6 +355,8 @@ window.navigateTo = page =>{
   document.getElementById(page+"-page").classList.add("active");
 
   if(page==="settings") loadUserList();
+  if(page==="calendar") renderCalendar('monthly');
+
 };
 
 
