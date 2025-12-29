@@ -1,12 +1,11 @@
-<script type="module" src="js/app.js"></script>
 <script type="module">
   import { addJournal } from './js/journal.js';
   import { addSchedule } from './js/schedule.js';
   import { addFinance } from './js/finance.js';
-  import { openDB } from './js/db.js';
+  import { openDB } from './db.js';
   import { setUser, getUser, getAllUsers } from './js/users.js';
 
-  // Define functions on window so they're available globally
+  // Define all functions globally first
   window.startApp = async function() {
     const username = document.getElementById('username').value.trim();
     
@@ -33,13 +32,20 @@
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.classList.remove('active');
     });
-    event.target.classList.add('active');
+    
+    // Use currentTarget to get the button element
+    const button = event.currentTarget;
+    button.classList.add('active');
 
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
       content.classList.remove('active');
     });
-    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    const tabContent = document.getElementById(tabName + '-tab');
+    if (tabContent) {
+      tabContent.classList.add('active');
+    }
 
     // Load data for this tab
     loadTabData(tabName);
@@ -120,41 +126,103 @@
     }
   };
 
-  // Initialize the app
+  // Sync function
+  window.syncNow = async function() {
+    const syncButtons = document.querySelectorAll('.btn-sync, .btn-primary[onclick*="syncNow"]');
+    const originalTexts = [];
+    
+    syncButtons.forEach(btn => {
+      originalTexts.push(btn.innerHTML);
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Syncing...';
+      btn.disabled = true;
+    });
+    
+    // Simulate sync
+    setTimeout(() => {
+      const lastSync = new Date().toLocaleString();
+      const lastSyncEl = document.getElementById('last-sync');
+      if (lastSyncEl) {
+        lastSyncEl.textContent = lastSync;
+      }
+      localStorage.setItem('lastSync', lastSync);
+      
+      syncButtons.forEach((btn, index) => {
+        btn.innerHTML = '<i class="fas fa-check" style="margin-right: 5px;"></i> Synced!';
+      });
+      
+      setTimeout(() => {
+        syncButtons.forEach((btn, index) => {
+          btn.innerHTML = originalTexts[index];
+          btn.disabled = false;
+        });
+        
+        // Reload dashboard if active
+        if (document.getElementById('dashboard-tab')?.classList.contains('active')) {
+          loadDashboard();
+        }
+      }, 1500);
+    }, 2000);
+  };
+
+  // Initialize when DOM is loaded
   document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM loaded, initializing app...');
+    
+    // Check if elements exist
+    const landing = document.getElementById('landing');
+    const app = document.getElementById('app');
+    
+    if (!landing || !app) {
+      console.error('Required DOM elements not found');
+      return;
+    }
+    
     await openDB();
     const user = getUser();
     
     if (user) {
+      console.log('Found user:', user);
       showApp(user);
     } else {
+      console.log('No user found, showing landing page');
       showLanding();
     }
   });
 
   // Show landing page
   function showLanding() {
-    document.getElementById('landing').style.display = 'block';
-    document.getElementById('app').style.display = 'none';
+    const landing = document.getElementById('landing');
+    const app = document.getElementById('app');
+    
+    if (landing) landing.style.display = 'block';
+    if (app) app.style.display = 'none';
+    
     loadExistingUsers();
   }
 
   // Show main app
   function showApp(user) {
-    document.getElementById('landing').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    const landing = document.getElementById('landing');
+    const app = document.getElementById('app');
+    
+    if (landing) landing.style.display = 'none';
+    if (app) app.style.display = 'block';
     
     // Update user display
     updateUserDisplay(user);
     
     // Load dashboard
-    switchTab('dashboard');
+    setTimeout(() => {
+      loadTabData('dashboard');
+    }, 100);
   }
 
   // Load existing users
   async function loadExistingUsers() {
     const users = getAllUsers();
     const container = document.getElementById('existing-users');
+    
+    if (!container) return;
     
     if (users.length === 0) {
       container.innerHTML = '<p style="color: #999; font-size: 14px;">No previous users found</p>';
@@ -176,19 +244,40 @@
     const avatar = user.charAt(0).toUpperCase();
     
     // Update all user displays
-    document.getElementById('current-user').textContent = user;
-    document.getElementById('dashboard-user').textContent = user;
-    document.getElementById('settings-username').textContent = user;
-    document.getElementById('user-avatar').textContent = avatar;
-    document.getElementById('settings-avatar').textContent = avatar;
+    const elements = [
+      { id: 'current-user', text: user },
+      { id: 'dashboard-user', text: user },
+      { id: 'settings-username', text: user },
+      { id: 'user-avatar', text: avatar },
+      { id: 'settings-avatar', text: avatar }
+    ];
+    
+    elements.forEach(el => {
+      const element = document.getElementById(el.id);
+      if (element) {
+        element.textContent = el.text;
+      }
+    });
     
     // Update member since
-    const since = localStorage.getItem(`${user}_joined`) || new Date().toLocaleDateString();
-    document.getElementById('member-since').textContent = since;
+    const memberSinceEl = document.getElementById('member-since');
+    if (memberSinceEl) {
+      const since = localStorage.getItem(`${user}_joined`) || new Date().toLocaleDateString();
+      memberSinceEl.textContent = since;
+    }
+    
+    // Update last sync
+    const lastSyncEl = document.getElementById('last-sync');
+    if (lastSyncEl) {
+      const lastSync = localStorage.getItem('lastSync') || 'Never';
+      lastSyncEl.textContent = lastSync;
+    }
   }
 
   // Load tab data
   async function loadTabData(tabName) {
+    console.log('Loading tab:', tabName);
+    
     const db = await openDB();
     const storeName = tabName === 'journal' ? 'journals' : 
                      tabName === 'schedule' ? 'schedules' : 
@@ -201,124 +290,151 @@
     
     if (!storeName) return;
     
-    const tx = db.transaction(storeName, 'readonly');
-    const store = tx.objectStore(storeName);
-    const items = await new Promise((resolve, reject) => {
-      const request = store.getAll();
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
+    try {
+      const tx = db.transaction(storeName, 'readonly');
+      const store = tx.objectStore(storeName);
+      const items = await new Promise((resolve, reject) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
 
-    const listId = tabName + '-list';
-    const listEl = document.getElementById(listId);
+      const listId = tabName + '-list';
+      const listEl = document.getElementById(listId);
 
-    if (items.length === 0) {
-      listEl.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-${tabName === 'journal' ? 'book' : tabName === 'schedule' ? 'calendar' : 'wallet'}"></i>
-          <h3>No ${tabName} entries yet</h3>
-          <p>Add your first ${tabName} entry to get started</p>
-        </div>
-      `;
-      return;
-    }
-
-    if (tabName === 'journal') {
-      listEl.innerHTML = items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
-        <div class="item-card ${item.shared ? 'shared' : ''}">
-          <div class="item-header">
-            <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
-            <span class="item-date">${new Date(item.createdAt).toLocaleString()}</span>
-          </div>
-          <p style="margin: 12px 0 0 0; line-height: 1.5;">${item.text}</p>
-        </div>
-      `).join('');
-    } else if (tabName === 'schedule') {
-      const now = Date.now();
-      const upcoming = items.filter(item => new Date(item.end).getTime() > now);
-      const past = items.filter(item => new Date(item.end).getTime() <= now);
-      
-      listEl.innerHTML = '';
-      
-      if (upcoming.length > 0) {
-        listEl.innerHTML += `
-          <h3 style="margin: 20px 0 10px 0; color: #333;">Upcoming (${upcoming.length})</h3>
-          ${upcoming.sort((a, b) => new Date(a.start) - new Date(b.start)).map(item => `
-            <div class="item-card ${item.shared ? 'shared' : ''}">
-              <div class="item-header">
-                <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
-              </div>
-              <h4 style="margin: 8px 0;">${item.title}</h4>
-              <p class="item-date">
-                <i class="far fa-clock" style="margin-right: 5px;"></i>
-                ${new Date(item.start).toLocaleString()} - ${new Date(item.end).toLocaleString()}
-              </p>
-            </div>
-          `).join('')}
-        `;
+      if (!listEl) {
+        console.error('List element not found:', listId);
+        return;
       }
-      
-      if (past.length > 0) {
-        listEl.innerHTML += `
-          <h3 style="margin: 20px 0 10px 0; color: #333;">Past Events (${past.length})</h3>
-          ${past.sort((a, b) => new Date(b.start) - new Date(a.start)).map(item => `
-            <div class="item-card ${item.shared ? 'shared' : ''}" style="opacity: 0.7;">
-              <div class="item-header">
-                <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
-              </div>
-              <h4 style="margin: 8px 0;">${item.title}</h4>
-              <p class="item-date">${new Date(item.start).toLocaleString()}</p>
-            </div>
-          `).join('')}
+
+      if (items.length === 0) {
+        const icons = {
+          journal: 'book',
+          schedule: 'calendar',
+          finance: 'wallet'
+        };
+        
+        listEl.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-${icons[tabName] || 'question'}"></i>
+            <h3>No ${tabName} entries yet</h3>
+            <p>Add your first ${tabName} entry to get started</p>
+          </div>
         `;
+        return;
       }
-    } else if (tabName === 'finance') {
-      const total = items.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
-      listEl.innerHTML = `
-        <div class="item-card" style="border-left-color: #9C27B0; background: #f3e5f5;">
-          <h4 style="margin: 0 0 8px 0;">Current Balance</h4>
-          <div class="amount ${total >= 0 ? 'income' : 'expense'}">
-            ${total >= 0 ? '+' : ''}$${total.toFixed(2)}
+
+      if (tabName === 'journal') {
+        listEl.innerHTML = items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
+          <div class="item-card ${item.shared ? 'shared' : ''}">
+            <div class="item-header">
+              <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+              <span class="item-date">${new Date(item.createdAt).toLocaleString()}</span>
+            </div>
+            <p style="margin: 12px 0 0 0; line-height: 1.5;">${item.text}</p>
           </div>
-          <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">
-            ${items.length} transactions total
-          </p>
-        </div>
-      ` + items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
-        <div class="item-card ${item.shared ? 'shared' : ''}">
-          <div class="item-header">
-            <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
-            <span class="item-date">${new Date(item.createdAt).toLocaleDateString()}</span>
+        `).join('');
+      } else if (tabName === 'schedule') {
+        const now = Date.now();
+        const upcoming = items.filter(item => new Date(item.end).getTime() > now);
+        const past = items.filter(item => new Date(item.end).getTime() <= now);
+        
+        let html = '';
+        
+        if (upcoming.length > 0) {
+          html += `
+            <h3 style="margin: 20px 0 10px 0; color: #333;">Upcoming (${upcoming.length})</h3>
+            ${upcoming.sort((a, b) => new Date(a.start) - new Date(b.start)).map(item => `
+              <div class="item-card ${item.shared ? 'shared' : ''}">
+                <div class="item-header">
+                  <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+                </div>
+                <h4 style="margin: 8px 0;">${item.title}</h4>
+                <p class="item-date">
+                  <i class="far fa-clock" style="margin-right: 5px;"></i>
+                  ${new Date(item.start).toLocaleString()} - ${new Date(item.end).toLocaleString()}
+                </p>
+              </div>
+            `).join('')}
+          `;
+        }
+        
+        if (past.length > 0) {
+          html += `
+            <h3 style="margin: 20px 0 10px 0; color: #333;">Past Events (${past.length})</h3>
+            ${past.sort((a, b) => new Date(b.start) - new Date(a.start)).map(item => `
+              <div class="item-card ${item.shared ? 'shared' : ''}" style="opacity: 0.7;">
+                <div class="item-header">
+                  <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+                </div>
+                <h4 style="margin: 8px 0;">${item.title}</h4>
+                <p class="item-date">${new Date(item.start).toLocaleString()}</p>
+              </div>
+            `).join('')}
+          `;
+        }
+        
+        listEl.innerHTML = html || '<p style="text-align: center; color: #999;">No events found</p>';
+      } else if (tabName === 'finance') {
+        const total = items.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
+        listEl.innerHTML = `
+          <div class="item-card" style="border-left-color: #9C27B0; background: #f3e5f5;">
+            <h4 style="margin: 0 0 8px 0;">Current Balance</h4>
+            <div class="amount ${total >= 0 ? 'income' : 'expense'}">
+              ${total >= 0 ? '+' : ''}$${total.toFixed(2)}
+            </div>
+            <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">
+              ${items.length} transactions total
+            </p>
           </div>
-          <div class="amount ${item.type === 'in' ? 'income' : 'expense'}">
-            ${item.type === 'in' ? '+' : '-'}$${item.amount.toFixed(2)}
+        ` + items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
+          <div class="item-card ${item.shared ? 'shared' : ''}">
+            <div class="item-header">
+              <span class="item-owner ${item.shared ? 'shared' : ''}">${item.owner}</span>
+              <span class="item-date">${new Date(item.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div class="amount ${item.type === 'in' ? 'income' : 'expense'}">
+              ${item.type === 'in' ? '+' : '-'}$${item.amount.toFixed(2)}
+            </div>
+            ${item.description ? `<p style="color: #666; margin: 8px 0 0 0;">${item.description}</p>` : ''}
           </div>
-          ${item.description ? `<p style="color: #666; margin: 8px 0 0 0;">${item.description}</p>` : ''}
-        </div>
-      `).join('');
+        `).join('');
+      }
+    } catch (error) {
+      console.error('Error loading tab data:', error);
     }
   }
 
   // Load dashboard
   async function loadDashboard() {
+    console.log('Loading dashboard...');
+    
     const db = await openDB();
     
-    // Get counts
-    const journals = await getStoreCount(db, 'journals');
-    const schedules = await getStoreCount(db, 'schedules');
-    const finance = await getStoreCount(db, 'finance');
-    
-    // Update stats
-    document.getElementById('stat-journal').textContent = journals;
-    document.getElementById('stat-schedule').textContent = schedules;
-    
-    // Calculate balance
-    const financeItems = await getAllFromStore(db, 'finance');
-    const balance = financeItems.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
-    document.getElementById('stat-balance').textContent = `$${balance.toFixed(2)}`;
-    
-    // Load recent activity
-    await loadRecentActivity(db);
+    try {
+      // Get counts
+      const journals = await getStoreCount(db, 'journals');
+      const schedules = await getStoreCount(db, 'schedules');
+      const finance = await getStoreCount(db, 'finance');
+      
+      // Update stats
+      const statJournal = document.getElementById('stat-journal');
+      const statSchedule = document.getElementById('stat-schedule');
+      const statBalance = document.getElementById('stat-balance');
+      
+      if (statJournal) statJournal.textContent = journals;
+      if (statSchedule) statSchedule.textContent = schedules;
+      
+      // Calculate balance
+      const financeItems = await getAllFromStore(db, 'finance');
+      const balance = financeItems.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
+      if (statBalance) statBalance.textContent = `$${balance.toFixed(2)}`;
+      
+      // Load recent activity
+      await loadRecentActivity(db);
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+    }
   }
 
   // Helper functions
@@ -343,88 +459,65 @@
   }
 
   async function loadRecentActivity(db) {
-    const activities = [];
-    
-    // Get recent items from all stores
-    const stores = ['journals', 'schedules', 'finance'];
-    for (const store of stores) {
-      const items = await getAllFromStore(db, store);
-      items.forEach(item => {
-        activities.push({
-          type: store,
-          item: item,
-          date: item.createdAt
-        });
-      });
-    }
-    
-    // Sort by date
-    activities.sort((a, b) => b.date - a.date);
-    
-    // Display
     const container = document.getElementById('recent-activity');
-    if (activities.length === 0) {
-      container.innerHTML = '<p style="color: #999; text-align: center;">No recent activity</p>';
-      return;
-    }
+    if (!container) return;
     
-    container.innerHTML = activities.slice(0, 5).map(activity => {
-      const icon = activity.type === 'journals' ? 'book' : 
-                  activity.type === 'schedules' ? 'calendar' : 'wallet';
-      const text = activity.type === 'journals' ? `Journal entry: ${activity.item.text.substring(0, 30)}...` :
-                  activity.type === 'schedules' ? `Event: ${activity.item.title}` :
-                  `Transaction: $${activity.item.amount}`;
+    try {
+      const activities = [];
       
-      return `
-        <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee;">
-          <div style="background: #f0f7ff; border-radius: 50%; width: 32px; height: 32px; 
-                      display: flex; align-items: center; justify-content: center;">
-            <i class="fas fa-${icon}" style="color: #2196F3;"></i>
-          </div>
-          <div style="flex: 1;">
-            <div style="font-size: 14px; color: #333;">${text}</div>
-            <div style="font-size: 12px; color: #888;">
-              ${new Date(activity.date).toLocaleString()}
+      // Get recent items from all stores
+      const stores = ['journals', 'schedules', 'finance'];
+      for (const store of stores) {
+        const items = await getAllFromStore(db, store);
+        items.forEach(item => {
+          activities.push({
+            type: store,
+            item: item,
+            date: item.createdAt
+          });
+        });
+      }
+      
+      // Sort by date
+      activities.sort((a, b) => b.date - a.date);
+      
+      // Display
+      if (activities.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center;">No recent activity</p>';
+        return;
+      }
+      
+      container.innerHTML = activities.slice(0, 5).map(activity => {
+        const icon = activity.type === 'journals' ? 'book' : 
+                    activity.type === 'schedules' ? 'calendar' : 'wallet';
+        let text = '';
+        
+        if (activity.type === 'journals') {
+          text = `Journal: ${activity.item.text.substring(0, 30)}${activity.item.text.length > 30 ? '...' : ''}`;
+        } else if (activity.type === 'schedules') {
+          text = `Event: ${activity.item.title}`;
+        } else {
+          text = `${activity.item.type === 'in' ? 'Income' : 'Expense'}: $${activity.item.amount}`;
+        }
+        
+        return `
+          <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee;">
+            <div style="background: #f0f7ff; border-radius: 50%; width: 32px; height: 32px; 
+                        display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-${icon}" style="color: #2196F3;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 14px; color: #333;">${text}</div>
+              <div style="font-size: 12px; color: #888;">
+                ${new Date(activity.date).toLocaleString()}
+              </div>
             </div>
           </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // Simple sync function
-  window.syncNow = async function() {
-    const syncBtn = document.querySelector('.btn-sync');
-    const originalText = syncBtn.innerHTML;
-    
-    syncBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Syncing...';
-    syncBtn.disabled = true;
-    
-    // Simulate sync
-    setTimeout(() => {
-      const lastSync = new Date().toLocaleString();
-      document.getElementById('last-sync').textContent = lastSync;
-      localStorage.setItem('lastSync', lastSync);
-      
-      syncBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 5px;"></i> Synced!';
-      
-      setTimeout(() => {
-        syncBtn.innerHTML = originalText;
-        syncBtn.disabled = false;
-        
-        // Reload dashboard
-        if (document.getElementById('dashboard-tab').classList.contains('active')) {
-          loadDashboard();
-        }
-      }, 1500);
-    }, 2000);
-  };
-
-  // Set last sync on load
-  window.addEventListener('load', () => {
-    const lastSync = localStorage.getItem('lastSync');
-    if (lastSync) {
-      document.getElementById('last-sync').textContent = lastSync;
+        `;
+      }).join('');
+    } catch (error) {
+      console.error('Error loading recent activity:', error);
+      container.innerHTML = '<p style="color: #999; text-align: center;">Error loading activity</p>';
     }
-  });
+  }
 </script>
