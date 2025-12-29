@@ -1,14 +1,13 @@
-import { save } from './db.js'
-import { getUser } from './users.js'
+import { save } from './db.js';
+import { getUser } from './users.js';
 
-export async function addJournal(text, shared=false) {
-  const entry = {
-    id: crypto.randomUUID(),
-    owner: getUser(),
-    shared,
+export async function addJournal(text,shared){
+  await save('journals',{
+    id:crypto.randomUUID(),
+    owner:getUser(),
     text,
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  }
-  await save('journals', entry)
+    shared,
+    createdAt:Date.now(),
+    updatedAt:Date.now()
+  });
 }
