@@ -2,227 +2,359 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Shared Life - Simple Version</title>
+  <title>Shared Life Beta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
-    
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    
-    h1 {
-      color: #333;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .tab-buttons {
+    .tabs {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 20px;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
     }
-    
-    .tab-btn {
-      padding: 10px 20px;
+    .tab {
+      padding: 12px 24px;
+      background: none;
       border: none;
-      background: #f0f0f0;
-      border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
     }
-    
-    .tab-btn.active {
-      background: #4CAF50;
-      color: white;
+    .tab:hover {
+      background: #f5f5f5;
     }
-    
+    .tab.active {
+      border-bottom-color: #2196F3;
+      color: #2196F3;
+      font-weight: 600;
+    }
     .tab-content {
       display: none;
-      padding: 20px;
-      border: 1px solid #eee;
-      border-radius: 5px;
-      background: #fafafa;
     }
-    
     .tab-content.active {
       display: block;
     }
-    
-    input, textarea, select {
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group textarea {
       width: 100%;
       padding: 10px;
-      margin: 10px 0;
       border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
     }
-    
-    button {
-      padding: 10px 20px;
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    .btn-primary {
       background: #2196F3;
       color: white;
+      padding: 12px 24px;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
+      width: 100%;
     }
-    
-    button:hover {
+    .btn-primary:hover {
       background: #1976D2;
     }
-    
-    .debug-info {
-      margin-top: 30px;
-      padding: 15px;
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 5px;
-      font-size: 14px;
+    .items-list {
+      margin-top: 24px;
+    }
+    .item-card {
+      background: #f9f9f9;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #2196F3;
+    }
+    .item-card.shared {
+      background: #e8f5e9;
+      border-left-color: #4CAF50;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .item-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #2196F3;
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .item-badge.shared {
+      background: #4CAF50;
+    }
+    .item-meta {
+      color: #666;
+      font-size: 13px;
+    }
+    .amount {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+    .amount.income {
+      color: #4CAF50;
+    }
+    .amount.expense {
+      color: #f44336;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="app">
-    <h1>Shared Life - Simple Version</h1>
-    
-    <div class="debug-info" id="debug-info">
-      <strong>Debug Info:</strong> App loading...
-    </div>
-    
-    <div class="tab-buttons">
-      <button class="tab-btn active" onclick="switchTab('landing')">Home</button>
-      <button class="tab-btn" onclick="switchTab('journal')">Journal</button>
-      <button class="tab-btn" onclick="switchTab('schedule')">Schedule</button>
-      <button class="tab-btn" onclick="switchTab('finance')">Finance</button>
-      <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
-    </div>
-    
-    <div id="landing-tab" class="tab-content active">
-      <h2>Welcome!</h2>
-      <p>Enter your name to get started:</p>
-      <input type="text" id="username" placeholder="Your name" value="Test User">
-      <button onclick="setUsername()">Start</button>
-      
-      <h3 style="margin-top: 30px;">Previous Users:</h3>
-      <div id="previous-users"></div>
-    </div>
-    
-    <div id="journal-tab" class="tab-content">
-      <h2>Journal</h2>
-      <textarea id="journal-text" placeholder="What's on your mind?" rows="4"></textarea>
-      <button onclick="addJournal()">Add Entry</button>
-      <div id="journal-list" style="margin-top: 20px;"></div>
-    </div>
-    
-    <div id="schedule-tab" class="tab-content">
-      <h2>Schedule</h2>
-      <input type="text" id="event-title" placeholder="Event title">
-      <input type="datetime-local" id="event-start">
-      <input type="datetime-local" id="event-end">
-      <button onclick="addEvent()">Add Event</button>
-      <div id="schedule-list" style="margin-top: 20px;"></div>
-    </div>
-    
-    <div id="finance-tab" class="tab-content">
-      <h2>Finance</h2>
-      <input type="number" id="amount" placeholder="Amount" step="0.01">
-      <select id="finance-type">
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-      </select>
-      <button onclick="addTransaction()">Add Transaction</button>
-      <div id="finance-list" style="margin-top: 20px;"></div>
-    </div>
-    
-    <div id="settings-tab" class="tab-content">
-      <h2>Settings</h2>
-      <p>Current user: <strong id="current-user-display">None</strong></p>
-      <button onclick="logout()">Logout</button>
-      <button onclick="clearData()">Clear All Data</button>
-    </div>
-  </div>
-<!-- Remove module imports and use simple scripts -->
-<script src="js/users.js"></script>
-<script src="js/db.js"></script>
-<script src="js/journal.js"></script>
-<script src="js/schedule.js"></script>
-<script src="js/finance.js"></script>
 
-<script>
-  // Simple initialization
-  console.log('Shared Life starting...');
-  
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded');
-    
-    // Show landing page initially
-    document.getElementById('landing').style.display = 'block';
-    document.getElementById('app').style.display = 'none';
-    
-    // Check for existing user
-    const user = localStorage.getItem('activeUser');
-    if (user) {
-      console.log('Found existing user:', user);
-      startApp(user);
-    }
-  });
-  
-  window.startApp = function() {
-    const username = document.getElementById('username').value.trim();
-    if (!username) {
-      alert('Please enter your name');
+<div id="user-select">
+  <h2>Who are you?</h2>
+  <button onclick="selectUser('fikri')">Fikri</button>
+  <button onclick="selectUser('khansa')">Khansa</button>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <span id="activeUser"></span>
+    <button onclick="syncNow()">Sync</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('journal')">Journal</button>
+    <button class="tab" onclick="switchTab('schedule')">Schedule</button>
+    <button class="tab" onclick="switchTab('finance')">Finance</button>
+  </div>
+
+  <!-- Journal Tab -->
+  <div id="journal-tab" class="tab-content active">
+    <div class="form-group">
+      <label>Write your thoughts</label>
+      <textarea id="journal-text" placeholder="What's on your mind?"></textarea>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="journal-shared">
+      <label for="journal-shared">Share with partner</label>
+    </div>
+    <button class="btn-primary" onclick="addJournalEntry()">Add Entry</button>
+    <div id="journal-list" class="items-list"></div>
+  </div>
+
+  <!-- Schedule Tab -->
+  <div id="schedule-tab" class="tab-content">
+    <div class="form-group">
+      <label>Event Title</label>
+      <input type="text" id="schedule-title" placeholder="e.g., Date night">
+    </div>
+    <div class="form-group">
+      <label>Start Time</label>
+      <input type="datetime-local" id="schedule-start">
+    </div>
+    <div class="form-group">
+      <label>End Time</label>
+      <input type="datetime-local" id="schedule-end">
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="schedule-shared">
+      <label for="schedule-shared">Share with partner</label>
+    </div>
+    <button class="btn-primary" onclick="addScheduleEntry()">Add Event</button>
+    <div id="schedule-list" class="items-list"></div>
+  </div>
+
+  <!-- Finance Tab -->
+  <div id="finance-tab" class="tab-content">
+    <div class="form-group">
+      <label>Amount</label>
+      <input type="number" id="finance-amount" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select id="finance-type" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <option value="in">Income</option>
+        <option value="out">Expense</option>
+      </select>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="finance-shared">
+      <label for="finance-shared">Share with partner</label>
+    </div>
+    <button class="btn-primary" onclick="addFinanceEntry()">Add Transaction</button>
+    <div id="finance-list" class="items-list"></div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+  import { addJournal } from './js/journal.js';
+  import { addSchedule } from './js/schedule.js';
+  import { addFinance } from './js/finance.js';
+  import { openDB } from './js/db.js';
+
+  // Make functions global
+  window.switchTab = function(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    document.getElementById(tabName + '-tab').classList.add('active');
+
+    // Load data for this tab
+    loadTabData(tabName);
+  };
+
+  window.addJournalEntry = async function() {
+    const text = document.getElementById('journal-text').value.trim();
+    const shared = document.getElementById('journal-shared').checked;
+
+    if (!text) {
+      alert('Please write something!');
       return;
     }
-    
-    localStorage.setItem('activeUser', username);
-    console.log('User set:', username);
-    
-    document.getElementById('landing').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('current-user').textContent = username;
+
+    await addJournal(text, shared);
+    document.getElementById('journal-text').value = '';
+    document.getElementById('journal-shared').checked = false;
+    loadTabData('journal');
   };
-  
-  window.selectExistingUser = function(username) {
-    document.getElementById('username').value = username;
-  };
-  
-  window.switchTab = function(tabName) {
-    console.log('Switching to tab:', tabName);
-    
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-      tab.style.display = 'none';
-    });
-    
-    // Show selected tab
-    const tab = document.getElementById(tabName + '-tab');
-    if (tab) {
-      tab.style.display = 'block';
+
+  window.addScheduleEntry = async function() {
+    const title = document.getElementById('schedule-title').value.trim();
+    const start = document.getElementById('schedule-start').value;
+    const end = document.getElementById('schedule-end').value;
+    const shared = document.getElementById('schedule-shared').checked;
+
+    if (!title || !start || !end) {
+      alert('Please fill all fields!');
+      return;
     }
-    
-    // Update active button
-    document.querySelectorAll('.nav-tab').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    
-    if (event.target) {
-      event.target.classList.add('active');
-    }
+
+    await addSchedule(title, start, end, shared);
+    document.getElementById('schedule-title').value = '';
+    document.getElementById('schedule-start').value = '';
+    document.getElementById('schedule-end').value = '';
+    document.getElementById('schedule-shared').checked = false;
+    loadTabData('schedule');
   };
-</script>  
+
+  window.addFinanceEntry = async function() {
+    const amount = parseFloat(document.getElementById('finance-amount').value);
+    const type = document.getElementById('finance-type').value;
+    const shared = document.getElementById('finance-shared').checked;
+
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid amount!');
+      return;
+    }
+
+    await addFinance(amount, type, shared);
+    document.getElementById('finance-amount').value = '';
+    document.getElementById('finance-shared').checked = false;
+    loadTabData('finance');
+  };
+
+  async function loadTabData(tabName) {
+    const db = await openDB();
+    const storeName = tabName === 'journal' ? 'journals' : tabName === 'schedule' ? 'schedules' : 'finance';
+    
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const items = await new Promise((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+
+    const listId = tabName + '-list';
+    const listEl = document.getElementById(listId);
+
+    if (items.length === 0) {
+      listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No items yet</p>';
+      return;
+    }
+
+    if (tabName === 'journal') {
+      listEl.innerHTML = items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
+        <div class="item-card ${item.shared ? 'shared' : ''}">
+          <div class="item-header">
+            <span class="item-badge ${item.shared ? 'shared' : ''}">${item.owner}</span>
+            <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+          </div>
+          <p style="margin: 8px 0 0 0;">${item.text}</p>
+        </div>
+      `).join('');
+    } else if (tabName === 'schedule') {
+      listEl.innerHTML = items.sort((a, b) => new Date(a.start) - new Date(b.start)).map(item => `
+        <div class="item-card ${item.shared ? 'shared' : ''}">
+          <div class="item-header">
+            <span class="item-badge ${item.shared ? 'shared' : ''}">${item.owner}</span>
+          </div>
+          <h4 style="margin: 8px 0;">${item.title}</h4>
+          <p class="item-meta">
+            ${new Date(item.start).toLocaleString()} - ${new Date(item.end).toLocaleString()}
+          </p>
+        </div>
+      `).join('');
+    } else if (tabName === 'finance') {
+      const total = items.reduce((sum, item) => sum + (item.type === 'in' ? item.amount : -item.amount), 0);
+      listEl.innerHTML = `
+        <div class="item-card" style="border-left-color: #9C27B0; background: #f3e5f5;">
+          <h4 style="margin: 0 0 8px 0;">Balance</h4>
+          <div class="amount ${total >= 0 ? 'income' : 'expense'}">
+            ${total >= 0 ? '+' : ''}$${total.toFixed(2)}
+          </div>
+        </div>
+      ` + items.sort((a, b) => b.createdAt - a.createdAt).map(item => `
+        <div class="item-card ${item.shared ? 'shared' : ''}">
+          <div class="item-header">
+            <span class="item-badge ${item.shared ? 'shared' : ''}">${item.owner}</span>
+            <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="amount ${item.type === 'in' ? 'income' : 'expense'}">
+            ${item.type === 'in' ? '+' : '-'}$${item.amount.toFixed(2)}
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Load initial data when app loads
+  window.addEventListener('load', () => {
+    const user = localStorage.getItem('activeUser');
+    if (user) {
+      setTimeout(() => loadTabData('journal'), 500);
+    }
+  });
+</script>
+
 </body>
 </html>
