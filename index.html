@@ -20,6 +20,7 @@
     <button class="nav-tab" data-page="journal">Journal</button>
     <button class="nav-tab" data-page="schedule">Schedule</button>
     <button class="nav-tab" data-page="finance">Finance</button>
+    <button class="nav-tab" data-page="settings">Settings</button>
   </div>
 
   <div class="nav-user">
@@ -56,7 +57,7 @@
   <div id="home-page" class="tab-page">
     <h2>Dashboard</h2>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px;">
+    <div class="dashboard-grid" style="margin-top:12px;">
       <div class="form-card">
         <h3>Journal</h3>
         <div id="journal-count" style="font-size:36px;">0</div>
@@ -71,6 +72,15 @@
         <h3>Transaksi</h3>
         <div id="finance-count" style="font-size:36px;">0</div>
       </div>
+    </div>
+
+    <div class="form-card">
+      <h3>Ringkasan Hari Ini</h3>
+
+      <p id="today-journal"></p>
+      <p id="today-schedule"></p>
+      <p id="today-income"></p>
+      <p id="today-expense"></p>
     </div>
   </div>
 
@@ -187,6 +197,35 @@
     <div id="finance-list"></div>
   </div>
 
+
+  <!-- SETTINGS -->
+  <div id="settings-page" class="tab-page">
+
+    <div class="form-card">
+      <h3>User Terdaftar</h3>
+      <div id="user-list"></div>
+    </div>
+
+    <div class="form-card">
+      <h3>Ganti Nama User Aktif</h3>
+
+      <input id="rename-input" placeholder="Nama baru">
+      <br><br>
+
+      <button class="btn-primary" onclick="renameUser()">Ganti</button>
+    </div>
+
+    <div class="form-card">
+      <h3>Reset Semua Data</h3>
+
+      <button class="btn-primary" style="background:#d32f2f"
+        onclick="resetAllData()">
+        Hapus Semua Data
+      </button>
+    </div>
+
+  </div>
+
 </div>
 
 
@@ -231,6 +270,14 @@ function formatDate(d){
   });
 }
 
+function isToday(ts){
+  const d=new Date(ts);
+  const n=new Date();
+  return d.getDate()==n.getDate()
+    && d.getMonth()==n.getMonth()
+    && d.getFullYear()==n.getFullYear();
+}
+
 
 /* ========= SMALL DB HELPER ========= */
 
@@ -263,6 +310,7 @@ window.navigateTo = page =>{
   if(page==="journal") loadJournalData();
   if(page==="schedule") loadScheduleData();
   if(page==="finance") loadFinanceData();
+  if(page==="settings") loadUserList();
 };
 
 
@@ -314,9 +362,23 @@ function showApp(username){
 window.loadDashboard = async ()=>{
   const db=await openDB();
 
-  document.getElementById("journal-count").textContent=(await getAll(db,"journals")).length;
-  document.getElementById("schedule-count").textContent=(await getAll(db,"schedules")).length;
-  document.getElementById("finance-count").textContent=(await getAll(db,"finance")).length;
+  const journals = await getAll(db,"journals");
+  const schedules = await getAll(db,"schedules");
+  const finance = await getAll(db,"finance");
+
+  document.getElementById("journal-count").textContent=journals.length;
+  document.getElementById("schedule-count").textContent=schedules.length;
+  document.getElementById("finance-count").textContent=finance.length;
+
+  const todayJournal = journals.filter(j=>isToday(j.createdAt)).length;
+  const todaySchedule = schedules.filter(s=>isToday(s.start)).length;
+  const todayIncome = finance.filter(f=>isToday(f.createdAt)&&f.type==="in").reduce((s,f)=>s+f.amount,0);
+  const todayExpense = finance.filter(f=>isToday(f.createdAt)&&f.type==="out").reduce((s,f)=>s+f.amount,0);
+
+  document.getElementById("today-journal").textContent=`Journal: ${todayJournal}`;
+  document.getElementById("today-schedule").textContent=`Schedule: ${todaySchedule}`;
+  document.getElementById("today-income").textContent=`Pemasukan: ${formatRupiah(todayIncome)}`;
+  document.getElementById("today-expense").textContent=`Pengeluaran: ${formatRupiah(todayExpense)}`;
 };
 
 
@@ -439,6 +501,45 @@ window.loadFinanceData = async ()=>{
         <div class="item-meta">${formatDate(i.createdAt)}</div>
       </div>
     `).join("");
+};
+
+
+/* ========= SETTINGS ========= */
+
+window.loadUserList = ()=>{
+  const users = JSON.parse(localStorage.getItem("recentUsers")||"[]");
+  const box = document.getElementById("user-list");
+
+  box.innerHTML = users.map(u=>`
+    <div class="item-card">${u}</div>
+  `).join("");
+};
+
+window.renameUser = ()=>{
+  const newName=document.getElementById("rename-input").value.trim();
+  if(!newName) return alert("Nama tidak boleh kosong");
+
+  const old=getUser();
+
+  localStorage.setItem("activeUser",newName);
+
+  let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
+  users=[newName,...users.filter(x=>x!==old)];
+  localStorage.setItem("recentUsers",JSON.stringify(users));
+
+  alert("Nama diganti");
+  location.reload();
+};
+
+window.resetAllData = ()=>{
+  if(!confirm("Yakin hapus SEMUA data?")) return;
+
+  indexedDB.deleteDatabase("life_beta");
+  localStorage.removeItem("recentUsers");
+  localStorage.removeItem("activeUser");
+
+  alert("Data dihapus");
+  location.reload();
 };
 
 
