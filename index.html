@@ -179,7 +179,27 @@
 
   <!-- SCHEDULE -->
   <div id="schedule-page" class="tab-page">
-    <div class="form-card">
+		<div class="form-card">
+	  <h3>Filters</h3>
+
+	  <div class="form-group">
+		<label>Category</label>
+		<input id="schedule-filter-category" placeholder="e.g. Meeting">
+	  </div>
+
+	  <div class="form-group">
+		<label>Range</label>
+		<select id="schedule-filter-range">
+		  <option value="">All</option>
+		  <option value="today">Today</option>
+		  <option value="week">This Week</option>
+		</select>
+	  </div>
+
+	  <button class="btn-primary" onclick="loadScheduleData()">Apply</button>
+	</div>
+
+	<div class="form-card">
       <h3>New Event</h3>
 
       <div class="form-group">
@@ -216,6 +236,35 @@
   <div id="finance-page" class="tab-page">
 
     <div id="balance-display"></div>
+	
+	<div class="form-card">
+	  <h3>Filters</h3>
+
+	  <div class="form-group">
+		<label>Category</label>
+		<input id="finance-filter-category" placeholder="e.g. Food">
+	  </div>
+
+	  <div class="form-group">
+		<label>User</label>
+		<select id="finance-filter-user">
+		  <option value="">All</option>
+		  <option value="fikri">Fikri</option>
+		  <option value="khansa">Khansa</option>
+		</select>
+	  </div>
+
+	  <div class="form-group">
+		<label>Visibility</label>
+		<select id="finance-filter-shared">
+		  <option value="">All</option>
+		  <option value="true">Shared</option>
+		  <option value="false">Private</option>
+		</select>
+	  </div>
+
+	  <button class="btn-primary" onclick="loadFinanceData()">Apply</button>
+	</div>
 
     <div class="form-card">
       <h3>New Transaction</h3>
@@ -437,31 +486,54 @@ window.loadScheduleData = async ()=>{
   const items = await getAll(db,'schedules');
   const list = document.getElementById('schedule-list');
 
-  if(!items.length){
-    list.innerHTML = '<div class="empty-state">📅<br>No events yet</div>';
+  const cat = document.getElementById('schedule-filter-category')?.value.trim().toLowerCase() || '';
+  const range = document.getElementById('schedule-filter-range')?.value || '';
+
+  let filtered = items;
+
+  if(cat)
+    filtered = filtered.filter(i => (i.category||'').toLowerCase().includes(cat));
+
+  if(range==='today'){
+    const today = new Date().toDateString();
+    filtered = filtered.filter(i => new Date(i.start).toDateString()===today);
+  }
+
+  if(range==='week'){
+    const now = new Date();
+    const week = now.getWeek?.() ?? null;
+    const year = now.getFullYear();
+    filtered = filtered.filter(i=>{
+      const d = new Date(i.start);
+      return d.getFullYear()===year && d.getWeek?.()===week;
+    });
+  }
+
+  if(!filtered.length){
+    list.innerHTML = '<div class="empty-state">📅<br>No matching events</div>';
     return;
   }
 
-	  list.innerHTML = items
-	  .sort((a,b)=>new Date(a.start)-new Date(b.start))
-	  .map(item=>`
-		<div class="item-card ${item.shared?'shared':''}">
-		  <div class="item-header">
-			<div class="item-badges">
-			  <span class="item-badge">${item.owner}</span>
-			  ${item.category ? `<span class="item-badge">${item.category}</span>` : ''}
-			  ${item.shared?'<span class="item-badge shared">Shared</span>':''}
-			</div>
-		  </div>
-		  <h4>${item.title}</h4>
-		  <p class="item-meta">
-			${new Date(item.start).toLocaleString()} - 
-			${new Date(item.end).toLocaleString()}
-		  </p>
-		</div>
-	  `).join('');
-
+  list.innerHTML = filtered
+    .sort((a,b)=>new Date(a.start)-new Date(b.start))
+    .map(item=>`
+      <div class="item-card ${item.shared?'shared':''}">
+        <div class="item-header">
+          <div class="item-badges">
+            <span class="item-badge">${item.owner}</span>
+            ${item.category?`<span class="item-badge">${item.category}</span>`:''}
+            ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+          </div>
+        </div>
+        <h4>${item.title}</h4>
+        <p class="item-meta">
+          ${new Date(item.start).toLocaleString()} – 
+          ${new Date(item.end).toLocaleString()}
+        </p>
+      </div>
+    `).join('');
 };
+
 
 
 // ===== FINANCE =====
@@ -484,50 +556,64 @@ window.addFinanceEntry = async ()=>{
 };
 
 
-window.loadFinanceData = async ()=>{
-  const db = await openDB();
-  const items = await getAll(db,'finance');
-  const list = document.getElementById('finance-list');
-  const balance = document.getElementById('balance-display');
+	window.loadFinanceData = async ()=>{
+	  const db = await openDB();
+	  const items = await getAll(db,'finance');
+	  const list = document.getElementById('finance-list');
+	  const balance = document.getElementById('balance-display');
 
-  const total = items.reduce(
-    (s,i)=>s+(i.type==='in'?i.amount:-i.amount),0
-  );
+	  const cat = document.getElementById('finance-filter-category')?.value.trim().toLowerCase() || '';
+	  const user = document.getElementById('finance-filter-user')?.value || '';
+	  const shared = document.getElementById('finance-filter-shared')?.value || '';
 
-  balance.innerHTML = `
-    <div class="balance-card">
-      <h3>Current Balance</h3>
-      <div class="amount">
-        ${total>=0?'+':''}$${total.toFixed(2)}
-      </div>
-    </div>
-  `;
+	  let filtered = items;
 
-  if(!items.length){
-    list.innerHTML = '<div class="empty-state">💰<br>No transactions yet</div>';
-    return;
-  }
+	  if(cat)
+		filtered = filtered.filter(i => (i.category||'').toLowerCase().includes(cat));
 
-  list.innerHTML = items
-  .sort((a,b)=>b.createdAt-a.createdAt)
-  .map(item=>`
-    <div class="item-card ${item.shared?'shared':''}">
-      <div class="item-header">
-        <div class="item-badges">
-          <span class="item-badge">${item.owner}</span>
-          ${item.category ? `<span class="item-badge">${item.category}</span>` : ''}
-          ${item.shared?'<span class="item-badge shared">Shared</span>':''}
-        </div>
-        <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
-      </div>
+	  if(user)
+		filtered = filtered.filter(i => i.owner === user);
 
-      <div class="amount ${item.type==='in'?'income':'expense'}">
-        ${item.type==='in'?'+':'-'}$${item.amount.toFixed(2)}
-      </div>
-    </div>
-  `).join('');
+	  if(shared)
+		filtered = filtered.filter(i => String(i.shared) === shared);
 
-};
+	  const total = filtered.reduce(
+		(s,i)=>s+(i.type==='in'?i.amount:-i.amount),0);
+
+	  balance.innerHTML = `
+		<div class="balance-card">
+		  <h3>Filtered Balance</h3>
+		  <div class="amount">
+			${total>=0?'+':''}$${total.toFixed(2)}
+		  </div>
+		</div>
+	  `;
+
+	  if(!filtered.length){
+		list.innerHTML = '<div class="empty-state">💰<br>No matching transactions</div>';
+		return;
+	  }
+
+	  list.innerHTML = filtered
+		.sort((a,b)=>b.createdAt-a.createdAt)
+		.map(item=>`
+		  <div class="item-card ${item.shared?'shared':''}">
+			<div class="item-header">
+			  <div class="item-badges">
+				<span class="item-badge">${item.owner}</span>
+				${item.category?`<span class="item-badge">${item.category}</span>`:''}
+				${item.shared?'<span class="item-badge shared">Shared</span>':''}
+			  </div>
+			  <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+			</div>
+
+			<div class="amount ${item.type==='in'?'income':'expense'}">
+			  ${item.type==='in'?'+':'-'}$${item.amount.toFixed(2)}
+			</div>
+		  </div>
+		`).join('');
+	};
+
 
 
 // ===== INIT =====
