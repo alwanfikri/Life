@@ -257,6 +257,7 @@ import { setUser, getUser } from './js/users.js';
 
 let currentPage = 'landing';
 
+// ===== NAV =====
 function setActiveTab(page){
   document.querySelectorAll('.nav-tab').forEach(tab=>{
     tab.classList.toggle('active', tab.dataset.page===page);
@@ -283,6 +284,8 @@ window.navigateTo = page =>{
   showPage(page);
 };
 
+
+// ===== LOGIN =====
 window.loginUser = ()=>{
   const username = document.getElementById('username-input').value.trim();
   if(!username) return alert('Please enter your name');
@@ -304,10 +307,13 @@ function showApp(username){
   document.getElementById('home-page').classList.add('active');
   document.getElementById('main-nav').style.display='flex';
   document.getElementById('nav-username').textContent=username;
+
   setActiveTab('home');
   showPage('home');
 }
 
+
+// ===== RECENT USERS =====
 function saveRecentUser(username){
   let list = JSON.parse(localStorage.getItem('recentUsers')||'[]');
   list = [username,...list.filter(u=>u!==username)].slice(0,5);
@@ -329,6 +335,181 @@ window.quickLogin = username=>{
   showApp(username);
 };
 
+
+// ===== DB HELPERS =====
+async function getAll(db, store){
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+
+
+// ===== DASHBOARD =====
+window.loadDashboard = async ()=>{
+  const db = await openDB();
+  const journals = await getAll(db,'journals');
+  const schedules = await getAll(db,'schedules');
+  const finance = await getAll(db,'finance');
+
+  document.getElementById('journal-count').textContent = journals.length;
+  document.getElementById('schedule-count').textContent = schedules.length;
+  document.getElementById('finance-count').textContent = finance.length;
+};
+
+
+// ===== JOURNAL =====
+window.addJournalEntry = async ()=>{
+  const text = document.getElementById('journal-text').value.trim();
+  const shared = document.getElementById('journal-shared').checked;
+  if(!text) return alert('Please write something');
+
+  await addJournal(text, shared);
+
+  document.getElementById('journal-text').value='';
+  document.getElementById('journal-shared').checked=false;
+
+  loadJournalData();
+};
+
+window.loadJournalData = async ()=>{
+  const db = await openDB();
+  const items = await getAll(db,'journals');
+  const list = document.getElementById('journal-list');
+
+  if(!items.length){
+    list.innerHTML = '<div class="empty-state">📝<br>No entries yet</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .sort((a,b)=>b.createdAt-a.createdAt)
+    .map(item=>`
+      <div class="item-card ${item.shared?'shared':''}">
+        <div class="item-header">
+          <div class="item-badges">
+            <span class="item-badge">${item.owner}</span>
+            ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+          </div>
+          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+        </div>
+        <p>${item.text}</p>
+      </div>
+    `).join('');
+};
+
+
+// ===== SCHEDULE =====
+window.addScheduleEntry = async ()=>{
+  const title = document.getElementById('schedule-title').value.trim();
+  const start = document.getElementById('schedule-start').value;
+  const end = document.getElementById('schedule-end').value;
+  const shared = document.getElementById('schedule-shared').checked;
+
+  if(!title||!start||!end) return alert('Fill all fields');
+
+  await addSchedule(title,start,end,shared);
+
+  document.getElementById('schedule-title').value='';
+  document.getElementById('schedule-start').value='';
+  document.getElementById('schedule-end').value='';
+  document.getElementById('schedule-shared').checked=false;
+
+  loadScheduleData();
+};
+
+window.loadScheduleData = async ()=>{
+  const db = await openDB();
+  const items = await getAll(db,'schedules');
+  const list = document.getElementById('schedule-list');
+
+  if(!items.length){
+    list.innerHTML = '<div class="empty-state">📅<br>No events yet</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .sort((a,b)=>new Date(a.start)-new Date(b.start))
+    .map(item=>`
+      <div class="item-card ${item.shared?'shared':''}">
+        <div class="item-header">
+          <div class="item-badges">
+            <span class="item-badge">${item.owner}</span>
+            ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+          </div>
+        </div>
+        <h4>${item.title}</h4>
+        <p class="item-meta">
+          ${new Date(item.start).toLocaleString()} - 
+          ${new Date(item.end).toLocaleString()}
+        </p>
+      </div>
+    `).join('');
+};
+
+
+// ===== FINANCE =====
+window.addFinanceEntry = async ()=>{
+  const amount = parseFloat(document.getElementById('finance-amount').value);
+  const type = document.getElementById('finance-type').value;
+  const shared = document.getElementById('finance-shared').checked;
+
+  if(!amount||amount<=0) return alert('Enter valid amount');
+
+  await addFinance(amount,type,shared);
+
+  document.getElementById('finance-amount').value='';
+  document.getElementById('finance-shared').checked=false;
+
+  loadFinanceData();
+};
+
+window.loadFinanceData = async ()=>{
+  const db = await openDB();
+  const items = await getAll(db,'finance');
+  const list = document.getElementById('finance-list');
+  const balance = document.getElementById('balance-display');
+
+  const total = items.reduce(
+    (s,i)=>s+(i.type==='in'?i.amount:-i.amount),0
+  );
+
+  balance.innerHTML = `
+    <div class="balance-card">
+      <h3>Current Balance</h3>
+      <div class="amount">
+        ${total>=0?'+':''}$${total.toFixed(2)}
+      </div>
+    </div>
+  `;
+
+  if(!items.length){
+    list.innerHTML = '<div class="empty-state">💰<br>No transactions yet</div>';
+    return;
+  }
+
+  list.innerHTML = items
+    .sort((a,b)=>b.createdAt-a.createdAt)
+    .map(item=>`
+      <div class="item-card ${item.shared?'shared':''}">
+        <div class="item-header">
+          <div class="item-badges">
+            <span class="item-badge">${item.owner}</span>
+            ${item.shared?'<span class="item-badge shared">Shared</span>':''}
+          </div>
+          <span class="item-meta">${new Date(item.createdAt).toLocaleDateString()}</span>
+        </div>
+        <div class="amount ${item.type==='in'?'income':'expense'}">
+          ${item.type==='in'?'+':'-'}$${item.amount.toFixed(2)}
+        </div>
+      </div>
+    `).join('');
+};
+
+
+// ===== INIT =====
 window.addEventListener('load', async()=>{
   await openDB();
   const user = getUser();
@@ -336,6 +517,7 @@ window.addEventListener('load', async()=>{
   else displayRecentUsers();
 });
 </script>
+
 
 </body>
 </html>
