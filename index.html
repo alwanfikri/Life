@@ -37,18 +37,20 @@
   <div id="landing-page" class="tab-page active">
     <div class="form-card">
       <h2>Selamat datang 👋</h2>
-      <p>Masukkan nama kamu</p>
+
+      <p>Pilih user</p>
+
+      <div id="user-select-list"></div>
+
+      <hr>
+
+      <p>Atau buat user baru</p>
 
       <input id="username-input" placeholder="misal: fikri">
 
       <br><br>
 
-      <button class="btn-primary" onclick="loginUser()">Masuk</button>
-
-      <div id="recent-users" style="margin-top:16px;display:none;">
-        <h4>Pengguna terakhir:</h4>
-        <div id="user-chips"></div>
-      </div>
+      <button class="btn-primary" onclick="loginUser()">Tambah & Masuk</button>
     </div>
   </div>
 
@@ -173,33 +175,21 @@
       <button class="btn-primary" onclick="addFinanceEntry()">Simpan</button>
     </div>
 
-    <div class="form-card">
-      <h3>Filter</h3>
-
-      <input id="finance-filter-category" placeholder="Cari kategori">
-      <br><br>
-
-      <select id="finance-filter-user">
-        <option value="">Semua</option>
-      </select>
-      <br><br>
-
-      <select id="finance-filter-shared">
-        <option value="">Semua</option>
-        <option value="true">Shared</option>
-        <option value="false">Pribadi</option>
-      </select>
-      <br><br>
-
-      <button class="btn-primary" onclick="loadFinanceData()">Terapkan</button>
-    </div>
-
     <div id="finance-list"></div>
   </div>
 
 
   <!-- SETTINGS -->
   <div id="settings-page" class="tab-page">
+
+    <div class="form-card">
+      <h3>Tambah User</h3>
+
+      <input id="new-user-input" placeholder="Nama user baru">
+      <br><br>
+
+      <button class="btn-primary" onclick="addUser()">Tambah</button>
+    </div>
 
     <div class="form-card">
       <h3>User Terdaftar</h3>
@@ -240,284 +230,73 @@ import { openDB } from "./js/db.js";
 import { setUser, getUser } from "./js/users.js";
 
 
-/* ========= HELPERS ========= */
+/* ========= USER LIST UI ========= */
 
-function formatRupiah(num){
-  return new Intl.NumberFormat("id-ID",{
-    style:"currency",
-    currency:"IDR",
-    minimumFractionDigits:0
-  }).format(num);
+function loadLandingUsers(){
+  const box=document.getElementById("user-select-list");
+  const users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
+
+  if(users.length===0){
+    box.innerHTML="<i>Belum ada user</i>";
+    return;
+  }
+
+  box.innerHTML = users.map(u=>`
+    <button class="user-chip" onclick="quickLogin('${u}')">${u}</button>
+  `).join("");
 }
 
-function formatDateTime(d){
-  return new Date(d).toLocaleString("id-ID",{
-    weekday:"long",
-    year:"numeric",
-    month:"long",
-    day:"numeric",
-    hour:"2-digit",
-    minute:"2-digit"
-  });
-}
+window.quickLogin = u =>{
+  setUser(u);
+  showApp(u);
+};
 
-function formatDate(d){
-  return new Date(d).toLocaleDateString("id-ID",{
-    weekday:"long",
-    year:"numeric",
-    month:"long",
-    day:"numeric"
-  });
-}
+window.addUser = ()=>{
+  const name=document.getElementById("new-user-input").value.trim();
+  if(!name) return;
 
-function isToday(ts){
-  const d=new Date(ts);
-  const n=new Date();
-  return d.getDate()==n.getDate()
-    && d.getMonth()==n.getMonth()
-    && d.getFullYear()==n.getFullYear();
-}
+  let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
+  users=[name,...users.filter(x=>x!==name)];
+  localStorage.setItem("recentUsers",JSON.stringify(users));
 
-
-/* ========= SMALL DB HELPER ========= */
-
-async function getAll(db,store){
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(store,"readonly");
-    const req=tx.objectStore(store).getAll();
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
-}
-
-
-/* ========= NAVIGATION ========= */
-
-document.querySelectorAll(".nav-tab").forEach(tab=>{
-  tab.addEventListener("click",()=>navigateTo(tab.dataset.page));
-});
-
-window.navigateTo = page =>{
-  document.querySelectorAll(".nav-tab")
-    .forEach(t=>t.classList.toggle("active",t.dataset.page===page));
-
-  document.querySelectorAll(".tab-page")
-    .forEach(p=>p.classList.remove("active"));
-
-  document.getElementById(page+"-page").classList.add("active");
-
-  if(page==="home") loadDashboard();
-  if(page==="journal") loadJournalData();
-  if(page==="schedule") loadScheduleData();
-  if(page==="finance") loadFinanceData();
-  if(page==="settings") loadUserList();
+  alert("User ditambahkan");
+  loadUserList();
+  loadLandingUsers();
 };
 
 
-/* ========= USER HANDLING ========= */
-
-function populateUserFilters(){
-  const users = JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  const sel = document.getElementById("finance-filter-user");
-  sel.innerHTML=`<option value="">Semua</option>`;
-  users.forEach(u=>{
-    const o=document.createElement("option");
-    o.value=u;
-    o.textContent=u;
-    sel.appendChild(o);
-  });
-}
+/* ========= EXISTING LOGIN ========= */
 
 window.loginUser = ()=>{
   const u=document.getElementById("username-input").value.trim();
   if(!u) return;
 
+  let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
+  users=[u,...users.filter(x=>x!==u)];
+  localStorage.setItem("recentUsers",JSON.stringify(users));
+
   setUser(u);
-
-  let r=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  r=[u,...r.filter(x=>x!==u)].slice(0,5);
-  localStorage.setItem("recentUsers",JSON.stringify(r));
-
   showApp(u);
 };
 
-window.logout = ()=>{
-  document.getElementById("main-nav").style.display="none";
-  navigateTo("landing");
-};
 
-function showApp(username){
-  document.getElementById("landing-page").classList.remove("active");
-  document.getElementById("home-page").classList.add("active");
-  document.getElementById("main-nav").style.display="flex";
-  document.getElementById("nav-username").textContent=username;
-
-  populateUserFilters();
-  loadDashboard();
-}
-
-
-/* ========= DASHBOARD ========= */
-
-window.loadDashboard = async ()=>{
-  const db=await openDB();
-
-  const journals = await getAll(db,"journals");
-  const schedules = await getAll(db,"schedules");
-  const finance = await getAll(db,"finance");
-
-  document.getElementById("journal-count").textContent=journals.length;
-  document.getElementById("schedule-count").textContent=schedules.length;
-  document.getElementById("finance-count").textContent=finance.length;
-
-  const todayJournal = journals.filter(j=>isToday(j.createdAt)).length;
-  const todaySchedule = schedules.filter(s=>isToday(s.start)).length;
-  const todayIncome = finance.filter(f=>isToday(f.createdAt)&&f.type==="in").reduce((s,f)=>s+f.amount,0);
-  const todayExpense = finance.filter(f=>isToday(f.createdAt)&&f.type==="out").reduce((s,f)=>s+f.amount,0);
-
-  document.getElementById("today-journal").textContent=`Journal: ${todayJournal}`;
-  document.getElementById("today-schedule").textContent=`Schedule: ${todaySchedule}`;
-  document.getElementById("today-income").textContent=`Pemasukan: ${formatRupiah(todayIncome)}`;
-  document.getElementById("today-expense").textContent=`Pengeluaran: ${formatRupiah(todayExpense)}`;
-};
-
-
-/* ========= JOURNAL ========= */
-
-window.addJournalEntry = async ()=>{
-  const text=document.getElementById("journal-text").value.trim();
-  const shared=document.getElementById("journal-shared").checked;
-
-  if(!text) return;
-
-  await addJournal(text,shared);
-
-  document.getElementById("journal-text").value="";
-
-  loadJournalData();
-};
-
-window.loadJournalData = async ()=>{
-  const db=await openDB();
-  const list=document.getElementById("journal-list");
-
-  const items=(await getAll(db,"journals")).sort((a,b)=>b.createdAt-a.createdAt);
-
-  list.innerHTML = items.map(i=>`
-    <div class="item-card ${i.shared?"shared":""}">
-      <div class="item-badges">
-        <span class="item-badge">${i.owner}</span>
-        ${i.shared?'<span class="item-badge shared">Shared</span>':""}
-      </div>
-      <p>${i.text}</p>
-      <div class="item-meta">${formatDateTime(i.createdAt)}</div>
-    </div>
-  `).join("");
-};
-
-
-/* ========= SCHEDULE ========= */
-
-window.addScheduleEntry = async ()=>{
-  await addSchedule(
-    document.getElementById("schedule-title").value,
-    document.getElementById("schedule-start").value,
-    document.getElementById("schedule-end").value,
-    document.getElementById("schedule-category").value,
-    document.getElementById("schedule-shared").checked
-  );
-
-  loadScheduleData();
-};
-
-window.loadScheduleData = async ()=>{
-  const db=await openDB();
-  const list=document.getElementById("schedule-list");
-
-  const items=(await getAll(db,"schedules")).sort((a,b)=>new Date(a.start)-new Date(b.start));
-
-  list.innerHTML = items.map(i=>`
-    <div class="item-card ${i.shared?"shared":""}">
-      <div class="item-badges">
-        <span class="item-badge">${i.owner}</span>
-        ${i.category?`<span class="item-badge">${i.category}</span>`:""}
-      </div>
-
-      <h4>${i.title}</h4>
-
-      <div class="item-meta">
-        ${formatDateTime(i.start)} – ${formatDateTime(i.end)}
-      </div>
-    </div>
-  `).join("");
-};
-
-
-/* ========= FINANCE ========= */
-
-window.addFinanceEntry = async ()=>{
-  await addFinance(
-    parseFloat(document.getElementById("finance-amount").value),
-    document.getElementById("finance-type").value,
-    document.getElementById("finance-category").value,
-    document.getElementById("finance-shared").checked
-  );
-
-  loadFinanceData();
-};
-
-window.loadFinanceData = async ()=>{
-  const db=await openDB();
-  const list=document.getElementById("finance-list");
-  const balance=document.getElementById("balance-display");
-  const user=getUser();
-
-  const items=await getAll(db,"finance");
-
-  const shared = items.reduce((s,i)=>s+(i.shared?(i.type==="in"?i.amount:-i.amount):0),0);
-  const mine = items.reduce((s,i)=>s+(!i.shared&&i.owner===user?(i.type==="in"?i.amount:-i.amount):0),0);
-
-  balance.innerHTML=`
-    <div class="balance-card">
-      <div>Saldo Shared: <b>${formatRupiah(shared)}</b></div>
-      <div>Saldo Kamu: <b>${formatRupiah(mine)}</b></div>
-      <div>Total Kamu: <b>${formatRupiah(shared+mine)}</b></div>
-    </div>
-  `;
-
-  list.innerHTML = items
-    .sort((a,b)=>b.createdAt-a.createdAt)
-    .map(i=>`
-      <div class="item-card ${i.shared?"shared":""}">
-        <div class="item-badges">
-          <span class="item-badge">${i.owner}</span>
-          ${i.category?`<span class="item-badge">${i.category}</span>`:""}
-        </div>
-
-        <div class="amount ${i.type==="in"?"income":"expense"}">
-          ${i.type==="in"?"+":"-"}${formatRupiah(i.amount)}
-        </div>
-
-        <div class="item-meta">${formatDate(i.createdAt)}</div>
-      </div>
-    `).join("");
-};
-
-
-/* ========= SETTINGS ========= */
+/* ========= SETTINGS USER LIST ========= */
 
 window.loadUserList = ()=>{
-  const users = JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  const box = document.getElementById("user-list");
+  const users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
+  const box=document.getElementById("user-list");
 
   box.innerHTML = users.map(u=>`
     <div class="item-card">${u}</div>
   `).join("");
 };
 
+
+/* ========= RENAME ========= */
+
 window.renameUser = ()=>{
   const newName=document.getElementById("rename-input").value.trim();
-  if(!newName) return alert("Nama tidak boleh kosong");
+  if(!newName) return;
 
   const old=getUser();
 
@@ -531,23 +310,52 @@ window.renameUser = ()=>{
   location.reload();
 };
 
+
+/* ========= RESET ========= */
+
 window.resetAllData = ()=>{
-  if(!confirm("Yakin hapus SEMUA data?")) return;
+  if(!confirm("Hapus semua data?")) return;
 
   indexedDB.deleteDatabase("life_beta");
-  localStorage.removeItem("recentUsers");
-  localStorage.removeItem("activeUser");
-
-  alert("Data dihapus");
+  localStorage.clear();
   location.reload();
 };
+
+
+/* ========= NAVIGATION ========= */
+
+document.querySelectorAll(".nav-tab").forEach(t=>{
+  t.addEventListener("click",()=>navigateTo(t.dataset.page));
+});
+
+window.navigateTo = page =>{
+  document.querySelectorAll(".nav-tab")
+    .forEach(t=>t.classList.toggle("active",t.dataset.page===page));
+
+  document.querySelectorAll(".tab-page")
+    .forEach(p=>p.classList.remove("active"));
+
+  document.getElementById(page+"-page").classList.add("active");
+
+  if(page==="settings") loadUserList();
+};
+
+
+/* ========= SHOW APP ========= */
+
+function showApp(username){
+  document.getElementById("landing-page").classList.remove("active");
+  document.getElementById("home-page").classList.add("active");
+  document.getElementById("main-nav").style.display="flex";
+  document.getElementById("nav-username").textContent=username;
+}
 
 
 /* ========= INIT ========= */
 
 window.addEventListener("load", async()=>{
   await openDB();
-  populateUserFilters();
+  loadLandingUsers();
 
   const u=getUser();
   if(u) showApp(u);
