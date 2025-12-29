@@ -1,0 +1,18 @@
+#user-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+}
+
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

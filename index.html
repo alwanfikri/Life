@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shared Life Beta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body>
+
+<div id="user-select">
+  <h2>Who are you?</h2>
+  <button onclick="selectUser('fikri')">Fikri</button>
+  <button onclick="selectUser('khansa')">Khansa</button>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <span id="activeUser"></span>
+    <button onclick="syncNow()">Sync</button>
+  </header>
+
+  <section id="content"></section>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
