@@ -7,7 +7,7 @@
 }
 
 #app {
-  max-width: 720px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
@@ -16,3 +16,101 @@
   flex-direction: column;
   gap: 16px;
 }
+
+/* NAV */
+
+nav{
+  background:#1976D2;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+}
+
+.nav-tabs{
+  display:flex;
+  gap:8px;
+}
+
+.nav-tab{
+  background:none;
+  border:none;
+  color:white;
+  padding:10px 14px;
+  border-radius:6px;
+}
+
+.nav-tab.active{
+  background:rgba(255,255,255,.25);
+}
+
+/* PAGE */
+
+.page-container{
+  max-width:900px;
+  margin:0 auto;
+  padding:16px;
+}
+
+/* CARDS */
+
+.form-card{
+  background:white;
+  padding:16px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+/* LIST */
+
+.item-card{
+  background:white;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  border-left:4px solid #1976D2;
+}
+
+.item-card.shared{
+  background:#E8F5E9;
+  border-left-color:#4CAF50;
+}
+
+/* BADGES */
+
+.item-badge{
+  display:inline-block;
+  background:#1976D2;
+  color:white;
+  border-radius:12px;
+  padding:4px 10px;
+  font-size:11px;
+}
+
+.item-badge.shared{
+  background:#4CAF50;
+}
+
+/* BALANCE */
+
+.balance-card{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  padding:16px;
+  border-radius:12px;
+}
+
+.amount{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.income{color:#4CAF50}
+.expense{color:#f44336}
+
+/* TABS */
+
+.tab-page{display:none}
+.tab-page.active{display:block}
