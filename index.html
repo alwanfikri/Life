@@ -59,6 +59,13 @@
   <!-- HOME -->
   <div id="home-page" class="tab-page">
     <h2>Dashboard</h2>
+	<div class="form-card">
+	  <h3>Pencarian</h3>
+	  <input id="search-input" placeholder="Contoh: apa yang khansa lakukan juni?">
+	  <button onclick="runSearch()">Cari</button>
+
+	  <div id="search-results"></div>
+	</div>
 
     <div class="dashboard-grid" style="margin-top:12px;">
       <div class="form-card">
@@ -412,6 +419,22 @@ window.addEventListener("load", async()=>{
   const u=getUser();
   if(u) showApp(u);
 });
+</script>
+<script type="module">
+import { search } from "./js/search.js";
+
+window.runSearch = async ()=>{
+  const q = document.getElementById("search-input").value;
+  const res = await search(q);
+
+  document.getElementById("search-results").innerHTML =
+    res.map(r=>`
+      <div class="item-card">
+        <b>${r.type}</b><br>
+        ${r.text || r.title || r.amount}
+      </div>
+    `).join("");
+};
 </script>
 
 </body>
