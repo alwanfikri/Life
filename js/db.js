@@ -1,12 +1,12 @@
-const DB_NAME='life_beta';
-const DB_VERSION=1;
+const DB_NAME = 'life_beta';
+const DB_VERSION = 2; // 🚨 naikkan versi supaya upgrade DB
 
 export function openDB(){
   return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
 
-    req.onupgradeneeded=e=>{
-      const db=e.target.result;
+    req.onupgradeneeded = e=>{
+      const db = e.target.result;
 
       if(!db.objectStoreNames.contains('journals'))
         db.createObjectStore('journals',{keyPath:'id'});
@@ -16,19 +16,16 @@ export function openDB(){
 
       if(!db.objectStoreNames.contains('finance'))
         db.createObjectStore('finance',{keyPath:'id'});
+
+      if(!db.objectStoreNames.contains('syncQueue'))
+        db.createObjectStore('syncQueue',{keyPath:'id'});
+
+      // 🆕 USER CACHE
+      if(!db.objectStoreNames.contains('users'))
+        db.createObjectStore('users',{keyPath:'name'});
     };
 
     req.onsuccess=()=>resolve(req.result);
     req.onerror=()=>reject(req.error);
-  });
-}
-
-export async function save(store,item){
-  const db=await openDB();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(store,'readwrite');
-    tx.objectStore(store).put(item);
-    tx.oncomplete=()=>resolve();
-    tx.onerror=()=>reject(tx.error);
   });
 }
