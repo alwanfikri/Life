@@ -1,429 +1,303 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Shared Life</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Shared Life</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/layout.css">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+
+<style>
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    background:#f5f7fb;
+  }
+
+  nav{
+    background:#1976D2;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 16px;
+  }
+
+  .nav-brand{font-size:20px;font-weight:600}
+
+  .nav-tabs button{
+    background:none;
+    border:none;
+    color:white;
+    padding:10px 14px;
+    cursor:pointer;
+  }
+
+  .nav-tabs button.active{
+    border-bottom:3px solid white;
+  }
+
+  .page-container{
+    max-width:1000px;
+    margin:0 auto;
+    padding:16px;
+  }
+
+  .tab-page{display:none}
+  .tab-page.active{display:block}
+
+  .form-card{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:16px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+  }
+
+  .user-chip{
+    padding:6px 12px;
+    border-radius:20px;
+    background:#E3F2FD;
+    border:none;
+    color:#1976D2;
+    cursor:pointer;
+  }
+
+  input,textarea,select{
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+  }
+
+  button{
+    cursor:pointer;
+  }
+
+  .item-card{
+    background:white;
+    padding:14px;
+    margin-bottom:8px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+  }
+
+  .balance-card{
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    color:white;
+    padding:20px;
+    border-radius:14px;
+    margin-bottom:16px;
+  }
+
+  .calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+
+  .calendar-day{
+    background:white;
+    border-radius:10px;
+    padding:8px;
+    min-height:80px;
+    box-shadow:0 1px 6px rgba(0,0,0,.05);
+  }
+</style>
 </head>
 
 <body>
 
+<!-- NAV -->
 <nav id="main-nav" style="display:none;">
   <div class="nav-brand">Shared Life</div>
 
   <div class="nav-tabs">
-    <button class="nav-tab active" data-page="home">Home</button>
-    <button class="nav-tab" data-page="journal">Journal</button>
-    <button class="nav-tab" data-page="schedule">Schedule</button>
-    <button class="nav-tab" data-page="finance">Finance</button>
-    <button class="nav-tab" data-page="calendar">Calendar</button>
-    <button class="nav-tab" data-page="settings">Settings</button>
+    <button onclick="navigateTo('home')" class="active">Home</button>
+    <button onclick="navigateTo('journal')">Journal</button>
+    <button onclick="navigateTo('schedule')">Schedule</button>
+    <button onclick="navigateTo('finance')">Keuangan</button>
+    <button onclick="navigateTo('calendar')">Calendar</button>
+    <button onclick="navigateTo('settings')">Settings</button>
   </div>
 
-  <div class="nav-user">
+  <div>
     <span id="nav-username"></span>
     <button onclick="logout()">Logout</button>
-    <button onclick="syncNow(event)">Sync</button>
+    <button onclick="syncNow()">Sync</button>
   </div>
 </nav>
 
 
 <div class="page-container">
 
-  <!-- LANDING -->
-  <div id="landing-page" class="tab-page active">
-    <div class="form-card">
-      <h2>Selamat datang 👋</h2>
+<!-- LANDING -->
+<div id="landing-page" class="tab-page active">
 
-      <p>Pilih user</p>
+  <div class="form-card">
+    <h2>Pilih / Tambah User</h2>
 
-      <div id="user-select-list"></div>
+    <div id="user-select-list" style="margin-bottom:10px;"></div>
 
-      <hr>
+    <input id="username-input" placeholder="Nama user baru">
 
-      <p>Atau buat user baru</p>
-
-      <input id="username-input" placeholder="misal: fikri">
-
-      <br><br>
-
-      <button class="btn-primary" onclick="loginUser()">Tambah & Masuk</button>
-    </div>
+    <button onclick="loginUser()" style="margin-top:10px;">
+      Tambah & Masuk
+    </button>
   </div>
+</div>
 
 
-  <!-- HOME -->
-  <div id="home-page" class="tab-page">
-    <h2>Dashboard</h2>
-	<div class="form-card">
-	  <h3>Pencarian</h3>
-	  <input id="search-input" placeholder="Contoh: apa yang fikri lakukan juni?">
-	  <button onclick="runSearch()">Cari</button>
+<!-- HOME -->
+<div id="home-page" class="tab-page">
 
-	  <div id="search-results"></div>
-	</div>
+  <h2>Dashboard</h2>
 
-    <div class="dashboard-grid" style="margin-top:12px;">
-      <div class="form-card">
+  <div class="form-card">
+    <div style="display:flex;gap:10px;">
+      <div class="form-card" style="flex:1;text-align:center;">
         <h3>Journal</h3>
-        <div id="journal-count" style="font-size:36px;">0</div>
+        <div id="journal-count" style="font-size:32px;">0</div>
       </div>
 
-      <div class="form-card">
+      <div class="form-card" style="flex:1;text-align:center;">
         <h3>Schedule</h3>
-        <div id="schedule-count" style="font-size:36px;">0</div>
+        <div id="schedule-count" style="font-size:32px;">0</div>
       </div>
 
-      <div class="form-card">
-        <h3>Transaksi</h3>
-        <div id="finance-count" style="font-size:36px;">0</div>
+      <div class="form-card" style="flex:1;text-align:center;">
+        <h3>Keuangan</h3>
+        <div id="finance-count" style="font-size:32px;">0</div>
       </div>
     </div>
-
-    <div class="form-card">
-      <h3>Ringkasan Hari Ini</h3>
-
-      <p id="today-journal"></p>
-      <p id="today-schedule"></p>
-      <p id="today-income"></p>
-      <p id="today-expense"></p>
-    </div>
   </div>
 
-
-  <!-- JOURNAL -->
-  <div id="journal-page" class="tab-page">
-
-    <div class="form-card">
-      <h3>Journal Baru</h3>
-
-      <textarea id="journal-text" placeholder="Tulis pikiranmu…"></textarea>
-
-      <br>
-
-      <label>
-        <input type="checkbox" id="journal-shared">
-        Shared
-      </label>
-
-      <br><br>
-
-      <button class="btn-primary" onclick="addJournalEntry()">Simpan</button>
-    </div>
-
-    <div id="journal-list"></div>
-  </div>
-
-
-  <!-- SCHEDULE -->
-  <div id="schedule-page" class="tab-page">
-
-    <div class="form-card">
-      <h3>Jadwal Baru</h3>
-
-      <input id="schedule-title" placeholder="Judul">
-      <br><br>
-
-      <input id="schedule-category" placeholder="Kategori (opsional)">
-      <br><br>
-
-      <label>Mulai</label>
-      <input id="schedule-start" type="datetime-local">
-      <br><br>
-
-      <label>Selesai</label>
-      <input id="schedule-end" type="datetime-local">
-      <br><br>
-
-      <label>
-        <input type="checkbox" id="schedule-shared">
-        Shared
-      </label>
-
-      <br><br>
-
-      <button class="btn-primary" onclick="addScheduleEntry()">Simpan</button>
-    </div>
-
-    <div id="schedule-list"></div>
-  </div>
-
-
-  <!-- FINANCE -->
-  <div id="finance-page" class="tab-page">
-
-    <div id="balance-display"></div>
-
-    <div class="form-card">
-      <h3>Transaksi Baru</h3>
-
-      <input id="finance-amount" type="number" placeholder="Jumlah">
-      <br><br>
-
-      <select id="finance-type">
-        <option value="in">Pemasukan</option>
-        <option value="out">Pengeluaran</option>
-      </select>
-      <br><br>
-
-      <input id="finance-category" placeholder="Kategori (opsional)">
-      <br><br>
-
-      <label>
-        <input type="checkbox" id="finance-shared">
-        Shared
-      </label>
-
-      <br><br>
-
-      <button class="btn-primary" onclick="addFinanceEntry()">Simpan</button>
-    </div>
-
-    <div id="finance-list"></div>
-  </div>
-
-
-  <!-- CALENDAR -->
-  <div id="calendar-page" class="tab-page">
-
-    <div class="form-card">
-      <h3>Calendar</h3>
-
-      <button onclick="renderCalendar('daily')">Daily</button>
-      <button onclick="renderCalendar('weekly')">Weekly</button>
-      <button onclick="renderCalendar('monthly')">Monthly</button>
-    </div>
-
-    <div id="calendar-root"></div>
-  </div>
-
-
-  <!-- SETTINGS -->
-  <div id="settings-page" class="tab-page">
-
-    <div class="form-card">
-      <h3>Tambah User</h3>
-
-      <input id="new-user-input" placeholder="Nama user baru">
-      <br><br>
-
-      <button class="btn-primary" onclick="addUser()">Tambah</button>
-    </div>
-
-    <div class="form-card">
-      <h3>User Terdaftar</h3>
-      <div id="user-list"></div>
-    </div>
-
-    <div class="form-card">
-      <h3>Ganti Nama User Aktif</h3>
-
-      <input id="rename-input" placeholder="Nama baru">
-      <br><br>
-
-      <button class="btn-primary" onclick="renameUser()">Ganti</button>
-    </div>
-
-    <div class="form-card">
-      <h3>Reset Semua Data</h3>
-
-      <button class="btn-primary" style="background:#d32f2f"
-        onclick="resetAllData()">
-        Hapus Semua Data
-      </button>
-    </div>
-
+  <div class="form-card">
+    <h3>Pencarian</h3>
+    <input id="search-input" placeholder="contoh: apa yang fikri lakukan juni?">
+    <button onclick="runSearch()" style="margin-top:8px;">Cari</button>
+    <div id="search-results"></div>
   </div>
 
 </div>
 
 
-<script type="module" src="js/app.js"></script>
+<!-- JOURNAL -->
+<div id="journal-page" class="tab-page">
+  <div class="form-card">
+    <textarea id="journal-text" placeholder="Tulis jurnal..."></textarea>
+    <label><input type="checkbox" id="journal-shared"> Shared</label>
+    <button onclick="addJournalEntry()">Tambah</button>
+  </div>
+
+  <div id="journal-list"></div>
+</div>
 
 
+<!-- SCHEDULE -->
+<div id="schedule-page" class="tab-page">
+
+  <div class="form-card">
+    <input id="schedule-title" placeholder="Judul">
+    <input type="datetime-local" id="schedule-start">
+    <input type="datetime-local" id="schedule-end">
+    <label><input type="checkbox" id="schedule-shared"> Shared</label>
+    <button onclick="addScheduleEntry()">Tambah</button>
+  </div>
+
+  <div id="schedule-list"></div>
+</div>
+
+
+<!-- FINANCE -->
+<div id="finance-page" class="tab-page">
+
+  <div id="balance-display"></div>
+
+  <div class="form-card">
+    <input id="finance-amount" type="number" placeholder="Nominal">
+    <select id="finance-type">
+      <option value="in">Income</option>
+      <option value="out">Expense</option>
+    </select>
+    <label><input type="checkbox" id="finance-shared"> Shared</label>
+    <button onclick="addFinanceEntry()">Tambah</button>
+  </div>
+
+  <div id="finance-list"></div>
+</div>
+
+
+<!-- CALENDAR -->
+<div id="calendar-page" class="tab-page">
+
+  <div class="form-card">
+    <button onclick="renderCalendar('daily')">Daily</button>
+    <button onclick="renderCalendar('weekly')">Weekly</button>
+    <button onclick="renderCalendar('monthly')">Monthly</button>
+  </div>
+
+  <div id="calendar-root"></div>
+</div>
+
+
+<!-- SETTINGS -->
+<div id="settings-page" class="tab-page">
+
+  <div class="form-card">
+    <h3>Registered Users</h3>
+    <div id="settings-user-list"></div>
+  </div>
+
+  <div class="form-card">
+    <button onclick="clearAllData()" style="background:#f44336;color:white;">
+      Hapus Semua Data Lokal
+    </button>
+  </div>
+
+</div>
+
+</div>
+
+
+<!-- ========== MODULE SCRIPT ========== -->
 <script type="module">
-import { addJournal } from "./js/journal.js";
-import { addSchedule } from "./js/schedule.js";
-import { addFinance } from "./js/finance.js";
+
 import { openDB } from "./js/db.js";
-import { setUser, getUser } from "./js/users.js";
-import { renderCalendar as renderCalRaw } from "./js/calendar.js";
+import { getUser, setUser } from "./js/users.js";
+import { search } from "./js/search.js";
+import { renderCalendar } from "./js/calendar.js";
 
 
-/* ========= GLOBAL WRAPPERS ========= */
+// ======== NAV ========
 
-window.renderCalendar = renderCalRaw;
+window.navigateTo = function(page){
 
+  document.querySelectorAll(".nav-tabs button")
+    .forEach(btn=>btn.classList.remove("active"));
 
-/* ========= JOURNAL ========= */
-
-window.addJournalEntry = async ()=>{
-  const text=document.getElementById("journal-text").value.trim();
-  const shared=document.getElementById("journal-shared").checked;
-  if(!text) return;
-  await addJournal(text,shared);
-  document.getElementById("journal-text").value="";
-  loadJournalData();
-};
-
-
-/* ========= SCHEDULE ========= */
-
-window.addScheduleEntry = async ()=>{
-  await addSchedule(
-    document.getElementById("schedule-title").value,
-    document.getElementById("schedule-start").value,
-    document.getElementById("schedule-end").value,
-    document.getElementById("schedule-category").value,
-    document.getElementById("schedule-shared").checked
-  );
-  loadScheduleData();
-};
-
-
-/* ========= FINANCE ========= */
-
-window.addFinanceEntry = async ()=>{
-  await addFinance(
-    parseFloat(document.getElementById("finance-amount").value),
-    document.getElementById("finance-type").value,
-    document.getElementById("finance-category").value,
-    document.getElementById("finance-shared").checked
-  );
-  loadFinanceData();
-};
-
-
-/* ========= LOGOUT ========= */
-
-window.logout = ()=>{
-  document.getElementById("main-nav").style.display="none";
-  document.getElementById("landing-page").classList.add("active");
-  document.querySelectorAll(".tab-page").forEach(p=>p.classList.remove("active"));
-};
-
-
-/* ========= USER LIST UI ========= */
-
-function loadLandingUsers(){
-  const box=document.getElementById("user-select-list");
-  const users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  if(users.length===0){
-    box.innerHTML="<i>Belum ada user</i>";
-    return;
-  }
-  box.innerHTML = users.map(u=>`
-    <button class="user-chip" onclick="quickLogin('${u}')">${u}</button>
-  `).join("");
-}
-
-window.quickLogin = u =>{
-  setUser(u);
-  showApp(u);
-};
-
-window.addUser = ()=>{
-  const name=document.getElementById("new-user-input").value.trim();
-  if(!name) return;
-  let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  users=[name,...users.filter(x=>x!==name)];
-  localStorage.setItem("recentUsers",JSON.stringify(users));
-  alert("User ditambahkan");
-  loadUserList();
-  loadLandingUsers();
-};
-
-
-/* ========= LOGIN ========= */
-
-window.loginUser = ()=>{
-  const u=document.getElementById("username-input").value.trim();
-  if(!u) return;
-  let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  users=[u,...users.filter(x=>x!==u)];
-  localStorage.setItem("recentUsers",JSON.stringify(users));
-  setUser(u);
-  showApp(u);
-};
-
-
-/* ========= SETTINGS ========= */
-
-window.loadUserList = ()=>{
-  const users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  const box=document.getElementById("user-list");
-  box.innerHTML = users.map(u=>`
-    <div class="item-card">${u}</div>
-  `).join("");
-};
-
-window.renameUser = ()=>{
-  const newName=document.getElementById("rename-input").value.trim();
-  if(!newName) return;
-  const old=getUser();
-  localStorage.setItem("activeUser",newName);
-  let users=JSON.parse(localStorage.getItem("recentUsers")||"[]");
-  users=[newName,...users.filter(x=>x!==old)];
-  localStorage.setItem("recentUsers",JSON.stringify(users));
-  alert("Nama diganti");
-  location.reload();
-};
-
-window.resetAllData = ()=>{
-  if(!confirm("Hapus semua data?")) return;
-  indexedDB.deleteDatabase("life_beta");
-  localStorage.clear();
-  location.reload();
-};
-
-
-/* ========= NAVIGATION ========= */
-
-document.querySelectorAll(".nav-tab").forEach(t=>{
-  t.addEventListener("click",()=>navigateTo(t.dataset.page));
-});
-
-window.navigateTo = page =>{
-  document.querySelectorAll(".nav-tab")
-    .forEach(t=>t.classList.toggle("active",t.dataset.page===page));
+  event.target.classList.add("active");
 
   document.querySelectorAll(".tab-page")
     .forEach(p=>p.classList.remove("active"));
 
   document.getElementById(page+"-page").classList.add("active");
-
-  if(page==="settings") loadUserList();
-  if(page==="calendar") renderCalRaw("monthly");
 };
 
 
-/* ========= SHOW APP ========= */
+// ======== LOGIN ========
 
-function showApp(username){
-  document.getElementById("landing-page").classList.remove("active");
-  document.getElementById("home-page").classList.add("active");
-  document.getElementById("main-nav").style.display="flex";
-  document.getElementById("nav-username").textContent=username;
-}
+window.loginUser = ()=>{}; // akan dioverride oleh app.js
+window.quickLogin = ()=>{};
+window.logout = ()=>{};
 
 
-/* ========= INIT ========= */
-
-window.addEventListener("load", async()=>{
-  await openDB();
-  loadLandingUsers();
-  const u=getUser();
-  if(u) showApp(u);
-});
-</script>
-<script type="module">
-import { search } from "./js/search.js";
+// ======== SEARCH ========
 
 window.runSearch = async ()=>{
+
   const q = document.getElementById("search-input").value;
   const res = await search(q);
 
@@ -431,12 +305,38 @@ window.runSearch = async ()=>{
     res.map(r=>`
       <div class="item-card">
         <b>${r.type}</b><br>
-        ${r.text || r.title || r.amount}
+        ${r.title || r.text || r.amount}
       </div>
     `).join("");
 };
+
+
+// ======== ADMIN ========
+
+window.clearAllData = async ()=>{
+
+  if(!confirm("Hapus semua data lokal?")) return;
+
+  const db = await openDB();
+
+  for(const s of db.objectStoreNames){
+    db.transaction(s,"readwrite").objectStore(s).clear();
+  }
+
+  alert("Done");
+  location.reload();
+};
+
+
+// ======== INIT ========
+
+window.addEventListener("load", async()=>{
+  await openDB();
+});
+
 </script>
+
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
-
