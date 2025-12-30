@@ -11,12 +11,12 @@ const slang = {
   belanja:"spend"
 };
 
-function normalize(text){
-  text = text.toLowerCase();
+function normalize(t){
+  t=t.toLowerCase();
   Object.keys(slang).forEach(k=>{
-    text = text.replaceAll(k, slang[k]);
+    t = t.replaceAll(k,slang[k]);
   });
-  return text;
+  return t;
 }
 
 export async function search(q){
@@ -25,15 +25,13 @@ export async function search(q){
   const db = await openDB();
   const results = [];
 
-  for(const store of ["journals","schedules","finance"]){
-    const tx = db.transaction(store,"readonly");
-    const rows = await tx.objectStore(store).getAll();
+  for(const s of ["journals","schedules","finance"]){
+    const rows = await db.transaction(s,"readonly")
+      .objectStore(s).getAll();
 
-    rows.forEach(item=>{
-      const blob = JSON.stringify(item).toLowerCase();
-      if(blob.includes(q)){
-        results.push({...item,type:store});
-      }
+    rows.forEach(r=>{
+      if(JSON.stringify(r).toLowerCase().includes(q))
+        results.push({...r,type:s});
     });
   }
 

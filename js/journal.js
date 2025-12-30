@@ -1,13 +1,19 @@
-import { save } from './db.js';
-import { getUser } from './users.js';
+import { openDB } from "./db.js";
+import { getUser } from "./users.js";
 
 export async function addJournal(text,shared){
-  await save('journals',{
-    id:crypto.randomUUID(),
-    owner:getUser(),
-    text,
+  const db = await openDB();
+
+  const item = {
+    id: crypto.randomUUID(),
+    owner: getUser(),
     shared,
-    createdAt:Date.now(),
-    updatedAt:Date.now()
-  });
+    text,
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("journals","readwrite");
+  tx.objectStore("journals").put(item);
+
+  return tx.complete;
 }
