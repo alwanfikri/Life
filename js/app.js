@@ -3,6 +3,7 @@ import { openDB } from './db.js'
 
 const API = 'https://script.google.com/macros/s/AKfycbwwP1vcelnBwsiG1Zy67wvK0xSsQCWEgaIvuRBgGTHvNFOGOS6JEzYcF3SU0tUz7ulf/exec';
 
+
 // ================= USER SYNC =================
 
 async function fetchUsers(){
@@ -35,7 +36,8 @@ async function addUserRemote(name){
   return fetchUsers();
 }
 
-// ============== LANDING UI ==============
+
+// ================= LANDING UI =================
 
 async function loadLandingUsers(){
   const list = await fetchUsers();
@@ -47,7 +49,9 @@ async function loadLandingUsers(){
   }
 
   box.innerHTML = list.map(u=>`
-    <button class="user-chip" onclick="quickLogin('${u.name}')">${u.name}</button>
+    <button class="user-chip" onclick="quickLogin('${u.name}')">
+      ${u.name}
+    </button>
   `).join("");
 }
 
@@ -56,7 +60,8 @@ window.quickLogin = name=>{
   showApp(name);
 };
 
-// ============ LOGIN HANDLER ============
+
+// ================= LOGIN =================
 
 window.loginUser = async ()=>{
   const name = document.getElementById("username-input").value.trim();
@@ -68,7 +73,8 @@ window.loginUser = async ()=>{
   showApp(name);
 };
 
-// ============ INIT ============
+
+// ================= INIT =================
 
 window.addEventListener("load", async()=>{
   await openDB();

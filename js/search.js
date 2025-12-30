@@ -27,13 +27,9 @@ export async function search(q){
 
   for(const store of ["journals","schedules","finance"]){
     const tx = db.transaction(store,"readonly");
-    const req = tx.objectStore(store).getAll();
+    const rows = await tx.objectStore(store).getAll();
 
-    const items = await new Promise(res=>{
-      req.onsuccess=()=>res(req.result);
-    });
-
-    items.forEach(item=>{
+    rows.forEach(item=>{
       const blob = JSON.stringify(item).toLowerCase();
       if(blob.includes(q)){
         results.push({...item,type:store});
